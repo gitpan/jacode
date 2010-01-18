@@ -1,0 +1,72 @@
+NAME
+
+    jacode.pl - Perl library for Japanese character code conversion
+
+SYNOPSIS
+
+    require 'jacode.pl';
+
+    &jcode'getcode(*line)
+    &jcode'convert(*line, $ocode [, $icode [, $option]])
+    &jcode'xxx2yyy(*line [, $option])
+    &jcode'to($ocode, $line [, $icode [, $option]])
+    &jcode'jis($line [, $icode [, $option]])
+    &jcode'euc($line [, $icode [, $option]])
+    &jcode'sjis($line [, $icode [, $option]])
+    &jcode'utf8($line [, $icode [, $option]])
+    &jcode'jis_inout($in, $out)
+    &jcode'get_inout($string)
+    &jcode'cache()
+    &jcode'nocache()
+    &jcode'flushcache()
+    &jcode'h2z_xxx(*line)
+    &jcode'z2h_xxx(*line)
+    &jcode'tr(*line, $from, $to [, $option])
+    &jcode'trans($line, $from, $to [, $option])
+    &jcode'init()
+
+    $jcode'convf{'xxx', 'yyy'}
+    $jcode'z2hf{'xxx'}
+    $jcode'h2zf{'xxx'}
+
+DESCRIPTION
+
+    This software has the upper compatibility to jcode.pl.
+
+    * jcode.pl upper compatible
+    * Perl4 script
+    * Support HALFWIDTH KATAKANA
+    * UTF-8 by cp932 to Unicode table
+        http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
+        http://support.microsoft.com/kb/170559/ja
+        (JIS X 0221:2007 BASIC JAPANESE and COMMON JAPANESE)
+    * No UTF8 flag
+    * Possible to re-use past code and how to
+
+DEPENDENCIES
+
+This software requires perl4.036 or later.
+
+LICENSE AND COPYRIGHT
+
+This software is free software;
+
+Use and redistribution for ANY PURPOSE are granted as long as all
+copyright notices are retained.  Redistribution with modification
+is allowed provided that you make your modified version obviously
+distinguishable from the original one.  THIS SOFTWARE IS PROVIDED
+BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES ARE
+DISCLAIMED.
+
+This software is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+MAINTAINER
+
+This project was originated by INABA Hitoshi <ina@cpan.org>.
+
+SEE ALSO
+
+perl, jcode.pl, Sjis.pm
+

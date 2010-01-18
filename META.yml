@@ -1,0 +1,17 @@
+--- #YAML:1.0
+name: jacode
+abstract: Perl library for Japanese character code conversion
+version: 2.13.4.0
+author:
+  - INABA Hitoshi <ina@cpan.org>
+license: perl
+distribution_type: script
+requires:
+recommends:
+build_requires:
+urls:
+  license: http://dev.perl.org/licenses/
+meta-spec:
+  version: 1.3
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+generated_by: INABA Hitoshi <ina@cpan.org>
