@@ -2,7 +2,7 @@ require 'jacode.pl';
 
 while (<>) {
     chop;
-    &jcode'convert(*_, 'utf8');
+    &jcode'convert(*_, 'utf8', 'euc');
     print $_, "\n";
 }
 
