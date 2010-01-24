@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.1 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.2 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 
 ######################################################################
 #
@@ -459,7 +459,7 @@ sub getcode {
     }
 
     # Id: getcode.pl,v 0.01 1998/03/17 gama Exp
-    # http://www2d.biglobe.ne.jp/~gama/cgi/list.cgi?bbs-ex2/getcode.pl
+    # http://www2d.biglobe.ne.jp/~gama/cgi/jcode/jcode.htm
 
     elsif (/(^|[\000-\177])$re_odd_kana($|[\000-\177])/go) {    # odd katakana
         $matched = 1;
@@ -470,7 +470,7 @@ sub getcode {
         local ( $sjis, $euc, $utf8 ) = ( 0, 0, 0 );
 
         # Id: getcode.pl,v 0.01 1998/03/17 gama Exp
-        # http://www2d.biglobe.ne.jp/~gama/cgi/list.cgi?bbs-ex2/getcode.pl
+        # http://www2d.biglobe.ne.jp/~gama/cgi/jcode/jcode.htm
 
         while ( $s =~ /(($re_sjis_c|$re_sjis_ank)+)/go ) {
             $sjis += length($1);
@@ -808,7 +808,7 @@ sub utf82jis {
 }
 
 sub _utf82jis {
-    local ($u) = shift;
+    local ($u) = @_;
     if ( $u =~ /^($re_utf8_kana)/o ) {
         &init_u2k unless defined %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
@@ -833,7 +833,7 @@ sub utf82euc {
 }
 
 sub _utf82euc {
-    local ($u) = shift;
+    local ($u) = @_;
     if ( $u =~ /^($re_utf8_kana)/o ) {
         &init_u2k unless defined %u2k;
         $n += $u =~ s/($re_utf8_kana)/"\216".$u2k{$1}/geo;
@@ -845,14 +845,14 @@ sub _utf82euc {
 }
 
 sub u2e {
-    local ($code) = shift;
+    local ($code) = @_;
     if ($cache) {
         $u2e{$code} =
           (      $s2e{ $u2s{$code} || &u2s($code) }
               || &s2e( $u2s{$code} || &u2s($code) ) );
     }
     else {
-        $s2e{ $u2s{$code} || &u2s($code) }
+        $s2e{ $u2s{$code}      || &u2s($code) }
           || &s2e( $u2s{$code} || &u2s($code) );
     }
 }
@@ -868,7 +868,7 @@ sub utf82sjis {
 }
 
 sub _utf82sjis {
-    local ($u) = shift;
+    local ($u) = @_;
     if ( $u =~ /^($re_utf8_kana)$/o ) {
         &init_u2k unless defined %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
@@ -881,7 +881,7 @@ sub _utf82sjis {
 
 sub u2s {
     local ($utf8);
-    local ($code) = shift;
+    local ($code) = @_;
     &init_utf82sjis unless defined %utf82sjis_1;
     $utf8 = unpack( 'H*', $code );
     if ( defined $JP170559{$utf8} ) {
@@ -1025,7 +1025,7 @@ sub _sjis2utf8 {
 
 sub s2u {
     local ($sjis);
-    local ($code) = shift;
+    local ($code) = @_;
     &init_sjis2utf8 unless defined %sjis2utf8_1;
     $sjis = unpack( 'H*', $code );
     if ( defined $sjis2utf8_1{$sjis} ) {
@@ -1221,95 +1221,95 @@ sub init_z2h_sjis {
 }
 
 %_z2h_utf8 = split( /\s+/, <<'END' );
-E38082 EFBDA1
-E3808C EFBDA2
-E3808D EFBDA3
-E38081 EFBDA4
-E383BB EFBDA5
-E383B2 EFBDA6
-E382A1 EFBDA7
-E382A3 EFBDA8
-E382A5 EFBDA9
-E382A7 EFBDAA
-E382A9 EFBDAB
-E383A3 EFBDAC
-E383A5 EFBDAD
-E383A7 EFBDAE
-E38383 EFBDAF
-E383BC EFBDB0
-E382A2 EFBDB1
-E382A4 EFBDB2
-E382A6 EFBDB3
-E382A8 EFBDB4
-E382AA EFBDB5
-E382AB EFBDB6
-E382AD EFBDB7
-E382AF EFBDB8
-E382B1 EFBDB9
-E382B3 EFBDBA
-E382B5 EFBDBB
-E382B7 EFBDBC
-E382B9 EFBDBD
-E382BB EFBDBE
-E382BD EFBDBF
-E382BF EFBE80
-E38381 EFBE81
-E38384 EFBE82
-E38386 EFBE83
-E38388 EFBE84
-E3838A EFBE85
-E3838B EFBE86
-E3838C EFBE87
-E3838D EFBE88
-E3838E EFBE89
-E3838F EFBE8A
-E38392 EFBE8B
-E38395 EFBE8C
-E38398 EFBE8D
-E3839B EFBE8E
-E3839E EFBE8F
-E3839F EFBE90
-E383A0 EFBE91
-E383A1 EFBE92
-E383A2 EFBE93
-E383A4 EFBE94
-E383A6 EFBE95
-E383A8 EFBE96
-E383A9 EFBE97
-E383AA EFBE98
-E383AB EFBE99
-E383AC EFBE9A
-E383AD EFBE9B
-E383AF EFBE9C
-E383B3 EFBE9D
-E3829B EFBE9E
-E3829C EFBE9F
-E383B4 EFBDB3EFBE9E
-E382AC EFBDB6EFBE9E
-E382AE EFBDB7EFBE9E
-E382B0 EFBDB8EFBE9E
-E382B2 EFBDB9EFBE9E
-E382B4 EFBDBAEFBE9E
-E382B6 EFBDBBEFBE9E
-E382B8 EFBDBCEFBE9E
-E382BA EFBDBDEFBE9E
-E382BC EFBDBEEFBE9E
-E382BE EFBDBFEFBE9E
-E38380 EFBE80EFBE9E
-E38382 EFBE81EFBE9E
-E38385 EFBE82EFBE9E
-E38387 EFBE83EFBE9E
-E38389 EFBE84EFBE9E
-E38390 EFBE8AEFBE9E
-E38393 EFBE8BEFBE9E
-E38396 EFBE8CEFBE9E
-E38399 EFBE8DEFBE9E
-E3839C EFBE8EEFBE9E
-E38391 EFBE8AEFBE9F
-E38394 EFBE8BEFBE9F
-E38397 EFBE8CEFBE9F
-E3839A EFBE8DEFBE9F
-E3839D EFBE8EEFBE9F
+e38082 efbda1
+e3808c efbda2
+e3808d efbda3
+e38081 efbda4
+e383bb efbda5
+e383b2 efbda6
+e382a1 efbda7
+e382a3 efbda8
+e382a5 efbda9
+e382a7 efbdaa
+e382a9 efbdab
+e383a3 efbdac
+e383a5 efbdad
+e383a7 efbdae
+e38383 efbdaf
+e383bc efbdb0
+e382a2 efbdb1
+e382a4 efbdb2
+e382a6 efbdb3
+e382a8 efbdb4
+e382aa efbdb5
+e382ab efbdb6
+e382ad efbdb7
+e382af efbdb8
+e382b1 efbdb9
+e382b3 efbdba
+e382b5 efbdbb
+e382b7 efbdbc
+e382b9 efbdbd
+e382bb efbdbe
+e382bd efbdbf
+e382bf efbe80
+e38381 efbe81
+e38384 efbe82
+e38386 efbe83
+e38388 efbe84
+e3838a efbe85
+e3838b efbe86
+e3838c efbe87
+e3838d efbe88
+e3838e efbe89
+e3838f efbe8a
+e38392 efbe8b
+e38395 efbe8c
+e38398 efbe8d
+e3839b efbe8e
+e3839e efbe8f
+e3839f efbe90
+e383a0 efbe91
+e383a1 efbe92
+e383a2 efbe93
+e383a4 efbe94
+e383a6 efbe95
+e383a8 efbe96
+e383a9 efbe97
+e383aa efbe98
+e383ab efbe99
+e383ac efbe9a
+e383ad efbe9b
+e383af efbe9c
+e383b3 efbe9d
+e3829b efbe9e
+e3829c efbe9f
+e383b4 efbdb3efbe9e
+e382ac efbdb6efbe9e
+e382ae efbdb7efbe9e
+e382b0 efbdb8efbe9e
+e382b2 efbdb9efbe9e
+e382b4 efbdbaefbe9e
+e382b6 efbdbbefbe9e
+e382b8 efbdbcefbe9e
+e382ba efbdbdefbe9e
+e382bc efbdbeefbe9e
+e382be efbdbfefbe9e
+e38380 efbe80efbe9e
+e38382 efbe81efbe9e
+e38385 efbe82efbe9e
+e38387 efbe83efbe9e
+e38389 efbe84efbe9e
+e38390 efbe8aefbe9e
+e38393 efbe8befbe9e
+e38396 efbe8cefbe9e
+e38399 efbe8defbe9e
+e3839c efbe8eefbe9e
+e38391 efbe8aefbe9f
+e38394 efbe8befbe9f
+e38397 efbe8cefbe9f
+e3839a efbe8defbe9f
+e3839d efbe8eefbe9f
 END
 
 sub init_z2h_utf8 {
@@ -9719,17 +9719,32 @@ jacode.pl - Perl library for Japanese character code conversion
 =head1 ABSTRACT
 
 This software has upper compatibility to jcode.pl.
+'Ja' is a meaning of 'Japanese' in ISO 639-1 code and is unrelated
+to 'JA Group Organization'.
+
+The code conversion from 'sjis' to 'utf8' is done by using following
+table.
+http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
+
+From 'utf8' to 'sjis' is done by using the CP932.TXT and following
+table.
+PRB: Conversion Problem Between Shift-JIS and Unicode
+http://support.microsoft.com/kb/170559/en-us
+
+At present, Legacy Encoding Project is not supported.
 
 =over 2
 
 =item * jcode.pl upper compatible
+
 =item * Perl4 script
+
 =item * Support HALFWIDTH KATAKANA
-=item * Support UTF-8 by cp932 to Unicode table
-  http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
-  http://support.microsoft.com/kb/170559/ja
-  (JIS X 0221:2007 BASIC JAPANESE and COMMON JAPANESE)
+
+=item * Support UTF-8
+
 =item * No UTF8 flag
+
 =item * Possible to re-use past code and how to
 
 =back
@@ -9739,6 +9754,8 @@ This software has upper compatibility to jcode.pl.
 This software requires perl4.036 or later.
 
 =head1 BUGS AND LIMITATIONS
+
+You must use -Llatin switch if you use on the JPerl.
 
 =head1 AUTHOR
 
@@ -9793,7 +9810,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 =head1 ACKNOWLEDGEMENTS
 
 This software was made referring to software and the document that the
-following hackers or persons had made. 
+following hackers or persons had made.
 I am thankful to all persons.
 
  Larry Wall, Perl
@@ -9801,12 +9818,13 @@ I am thankful to all persons.
 
  Kazumasa Utashiro, jcode.pl
  ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
+ http://mail.pm.org/pipermail/tokyo-pm/2002-March/001319.html
 
  Jeffrey E. F. Friedl, Mastering Regular Expressions
  http://www.oreilly.com/catalog/regex/index.html
 
  gama, getcode.pl
- http://www2d.biglobe.ne.jp/~gama/cgi/list.cgi?bbs-ex2/getcode.pl
+ http://www2d.biglobe.ne.jp/~gama/cgi/jcode/jcode.htm
 
  Gappai, jcodeg.diff
  http://www.vector.co.jp/soft/win95/prog/se347514.html
@@ -9819,6 +9837,29 @@ I am thankful to all persons.
 
  Dan Kogai, Encode module
  http://search.cpan.org/dist/Encode/
+
+ Japanese Unicode vender dependence character table
+ http://www.ingrid.org/java/i18n/unicode.html
+
+ XML Japanese profile explanation
+ http://www.y-adagio.com/public/standards/tr_xml_jpf/kaisetsu.htm
+
+ Japanese vender of OSF conference (OSF/JVC) recommendation
+ The code conversion specification between shifts JIS Japanese EUC and code system investigation of actual conditions
+ http://home.m05.itscom.net/numa/cde/sjis-euc/sjis-euc.html
+
+ Problem and solution concerning Unicode and user definition character and vender definition character
+ http://home.m05.itscom.net/numa/cde/ucs-conv/ucs-conv.html
+
+ Legacy Encoding Project
+ http://sourceforge.jp/projects/legacy-encoding/
+ http://legacy-encoding.sourceforge.jp/wiki/
+
+ MORIYAMA Masayuki, Encode::ISO2022JPMS module
+ http://mail.pm.org/pipermail/tokyo-pm/2006-October/002164.html
+
+ Tokyo-pm archive
+ http://mail.pm.org/pipermail/tokyo-pm/
 
 =cut
 
