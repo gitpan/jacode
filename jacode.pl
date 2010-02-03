@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.2 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.3 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 
 ######################################################################
 #
@@ -78,6 +78,19 @@ q$Id: jacode.pl,v 2.13.4.2 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:
 #       be represented in sjis or utf8 and they will be replased
 #       by "geta" character when converted to sjis.
 #       JIS X0213 characters can not be represented in all.
+#
+#       For perl is 5.8.1 or later, &jcode'convert acts as a wrapper
+#       to Encode::from_to. When $ocode or $icode is neither "jis",
+#       "sjis", "euc" nor "utf8", and Encode module can be used,
+#
+#       Encode::from_to( $line, $icode, $ocode )
+#
+#       is executed instead of
+#
+#       &jcode'convert(*line, $ocode, $icode, $option).
+#
+#       In this case, there is no effective return value of pointer
+#       of convert subroutine in array context.
 #
 #       See next paragraph for $option parameter.
 #
@@ -258,13 +271,30 @@ q$Id: jacode.pl,v 2.13.4.2 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:
 #   }
 #   print @buf if @buf;
 #
+# Convert SJIS to UTF16-BE and print each line by perl 5.8.1 or later.
+#
+#   require 'jacode.pl';
+#   use 5.8.1;
+#   while (defined($s = <>)) {
+#       jcode::convert(\$s, 'UTF16-BE', 'sjis');
+#       print $s;
+#   }
+#
+# Convert SJIS to MIME-Header-ISO_2022_JP and print each line by perl 5.8.1 or later.
+#
+#   require 'jacode.pl';
+#   use 5.8.1;
+#   while (defined($s = <>)) {
+#       jcode::convert(\$s, 'MIME-Header-ISO_2022_JP', 'sjis');
+#       print $s;
+#   }
+#
 ######################################################################
 
 #
-# Call initialize function if it is not called yet.  This may sound
-# strange but it makes easy to embed the jacode.pl at the end of
-# script.  Call &jcode'init at the beginning of the script in that
-# case.
+# Call initialize function if not called yet.  This sound strange
+# but this makes easy to embed the jacode.pl at the script.  Call
+# &jcode'init at the beginning of the script in that case.
 #
 &init unless defined $version;
 
@@ -312,11 +342,11 @@ sub init {
       . '|[\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]'
       . '|[\xf4-\xf4][\x80-\x8f][\x80-\xbf][\x80-\xbf]';
 
-    # RFC 2279
-    $re_utf8_rfc2279_c =
-        '[\xc2-\xdf][\x80-\xbf]'
-      . '|[\xe0-\xef][\x80-\xbf][\x80-\xbf]'
-      . '|[\xf0-\xf4][\x80-\x8f][\x80-\xbf][\x80-\xbf]';
+    #   # RFC 2279
+    #   $re_utf8_rfc2279_c =
+    #       '[\xc2-\xdf][\x80-\xbf]'
+    #     . '|[\xe0-\xef][\x80-\xbf][\x80-\xbf]'
+    #     . '|[\xf0-\xf4][\x80-\x8f][\x80-\xbf][\x80-\xbf]';
 
     $re_utf8_c    = $re_utf8_rfc3629_c;
     $re_utf8_kana = '\xef\xbd[\xa1-\xbf]|\xef\xbe[\x80-\x9f]';
@@ -584,7 +614,15 @@ sub convert {
     $ocode = 'jis' unless $ocode;
     $ocode = $icode if $ocode eq 'noconv';
     local (*f) = $convf{ $icode, $ocode };
-    &f( *s, $opt );
+    if ( $convf{ $icode, $ocode } ) {
+        &f( *s, $opt );
+    }
+    else {
+        eval q{ use Encode; };
+        unless ($@) {
+            eval q{ Encode::from_to( $s, $icode, $ocode ); };
+        }
+    }
     wantarray ? ( *f, $icode ) : $icode;
 }
 
@@ -852,7 +890,7 @@ sub u2e {
               || &s2e( $u2s{$code} || &u2s($code) ) );
     }
     else {
-        $s2e{ $u2s{$code}      || &u2s($code) }
+        $s2e{ $u2s{$code} || &u2s($code) }
           || &s2e( $u2s{$code} || &u2s($code) );
     }
 }
@@ -9693,6 +9731,8 @@ jacode.pl - Perl library for Japanese character code conversion
 
     # note: file name is 'jacode.pl', but package name is 'jcode'
 
+    # Perl4 interface:
+
     &jcode'getcode(*line)
     &jcode'convert(*line, $ocode [, $icode [, $option]])
     &jcode'xxx2yyy(*line [, $option])
@@ -9716,6 +9756,31 @@ jacode.pl - Perl library for Japanese character code conversion
     $jcode'z2hf{'xxx'}
     $jcode'h2zf{'xxx'}
 
+    # Perl5 interface:
+
+    jcode::getcode(\$line)
+    jcode::convert(\$line, $ocode [, $icode [, $option]])
+    jcode::xxx2yyy(\$line [, $option])
+    jcode::to($ocode, $line [, $icode [, $option]])
+    jcode::jis($line [, $icode [, $option]])
+    jcode::euc($line [, $icode [, $option]])
+    jcode::sjis($line [, $icode [, $option]])
+    jcode::utf8($line [, $icode [, $option]])
+    jcode::jis_inout($in, $out)
+    jcode::get_inout($string)
+    jcode::cache()
+    jcode::nocache()
+    jcode::flushcache()
+    jcode::h2z_xxx(\$line)
+    jcode::z2h_xxx(\$line)
+    jcode::tr(\$line, $from, $to [, $option])
+    jcode::trans($line, $from, $to [, $option])
+    jcode::init()
+
+    &{$jcode::convf{'xxx', 'yyy'}}(\$line)
+    &{$jcode::z2hf{'xxx'}}(\$line)
+    &{$jcode::h2zf{'xxx'}}(\$line)
+
 =head1 ABSTRACT
 
 This software has upper compatibility to jcode.pl.
@@ -9724,20 +9789,26 @@ to 'JA Group Organization'.
 
 The code conversion from 'sjis' to 'utf8' is done by using following
 table.
+
 http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
 
 From 'utf8' to 'sjis' is done by using the CP932.TXT and following
 table.
+
 PRB: Conversion Problem Between Shift-JIS and Unicode
 http://support.microsoft.com/kb/170559/en-us
 
 At present, Legacy Encoding Project is not supported.
+
+What's this software good for ...
 
 =over 2
 
 =item * jcode.pl upper compatible
 
 =item * Perl4 script
+
+=item * Acts as a wrapper to Encode::from_to
 
 =item * Support HALFWIDTH KATAKANA
 
@@ -9752,6 +9823,295 @@ At present, Legacy Encoding Project is not supported.
 =head1 DEPENDENCIES
 
 This software requires perl4.036 or later.
+
+=head1 PERL4 INTERFACE
+
+=over 4
+
+=item &jcode'getcode(*line)
+
+  Return 'jis', 'sjis', 'euc', 'utf8' or undef according
+  to Japanese character code in $line.  Return 'binary' if
+  the data has non-character code.
+  
+  When evaluated in array context, it returns a list
+  contains two items.  First value is the number of
+  characters which matched to the expected code, and
+  second value is the code name.  It is useful if and
+  only if the number is not 0 and the code is undef;
+  that case means it couldn't tell 'euc' or 'sjis'
+  because the evaluation score was exactly same.  This
+  interface is too tricky, though.
+  
+  Code detection between euc and sjis is very difficult
+  or sometimes impossible or even lead to wrong result
+  when it includes JIS X0201 KANA characters.
+
+=item &jcode'convert(*line, $ocode [, $icode [, $option]])
+
+  Convert the contents of $line to the specified
+  Japanese code given in the second argument $ocode.
+  $ocode can be any of "jis", "sjis", "euc" or "utf8", or
+  use "noconv" when you don't want the code conversion.
+  Input code is recognized automatically from the line
+  itself when $icode is not supplied.  $icode also can be
+  specified, but xxx2yyy routine is more efficient when
+  both codes are known.
+  
+  It returns the code of input string in scalar context,
+  and a list of pointer of convert subroutine and the
+  input code in array context.
+  
+  Japanese character code JIS X0201, X0208, X0212 and
+  ASCII code are supported.  JIS X0212 characters can not
+  be represented in sjis or utf8 and they will be replased
+  by "geta" character when converted to sjis.
+  JIS X0213 characters can not be represented in all.
+  
+  For perl is 5.8.1 or later, &jcode'convert acts as a wrapper
+  to Encode::from_to. When $ocode or $icode is neither "jis",
+  "sjis", "euc" nor "utf8", and Encode module can be used,
+ 
+  Encode::from_to( $line, $icode, $ocode )
+ 
+  is executed instead of
+ 
+  &jcode'convert(*line, $ocode, $icode, $option).
+ 
+  In this case, there is no effective return value of pointer
+  of convert subroutine in array context.
+ 
+  See next paragraph for $option parameter.
+
+=item &jcode'xxx2yyy(*line [, $option])
+
+  Convert the Japanese code from xxx to yyy.  String xxx
+  and yyy are any convination from "jis", "euc", "sjis"
+  or "utf8". They return *approximate* number of converted
+  bytes.  So return value 0 means the line was not
+  converted at all.
+  
+  Optional parameter $option is used to specify optional
+  conversion method.  String "z" is for JIS X0201 KANA
+  to JIS X0208 KANA, and "h" is for reverse.
+
+=item $jcode'convf{'xxx', 'yyy'}
+
+  The value of this associative array is pointer to the
+  subroutine jcode'xxx2yyy().
+
+=item &jcode'to($ocode, $line [, $icode [, $option]])
+
+=item &jcode'jis($line [, $icode [, $option]])
+
+=item &jcode'euc($line [, $icode [, $option]])
+
+=item &jcode'sjis($line [, $icode [, $option]])
+
+=item &jcode'utf8($line [, $icode [, $option]])
+
+  These functions are prepared for easy use of
+  call/return-by-value interface.  You can use these
+  funcitons in s///e operation or any other place for
+  convenience.
+
+=item &jcode'jis_inout($in, $out)
+
+  Set or inquire JIS start and end sequences.  Default
+  is "ESC-$-B" and "ESC-(-B".  If you supplied only one
+  character, "ESC-$" or "ESC-(" is prepended for each
+  character respectively.  Acutually "ESC-(-B" is not a
+  sequence to end JIS code but a sequence to start ASCII
+  code set.  So `in' and `out' are somewhat misleading.
+
+=item &jcode'get_inout($string)
+
+  Get JIS start and end sequences from $string.
+
+=item &jcode'cache()
+
+=item &jcode'nocache()
+
+=item &jcode'flushcache()
+
+  Usually, converted character is cached in memory to
+  avoid same calculations have to be done many times.
+  To disable this caching, call &jcode'nocache().  It
+  can be revived by &jcode'cache() and cache is flushed
+  by calling &jcode'flushcache().  &cache() and &nocache()
+  functions return previous caching state.
+
+=item &jcode'h2z_xxx(*line)
+
+  JIS X0201 KANA (so-called Hankaku-KANA) to JIS X0208 KANA
+  (Zenkaku-KANA) code conversion routine.  String xxx is
+  any of "jis", "sjis", "euc" and "utf8".  From the difficulty
+  of recognizing code set from 1-byte KATAKANA string,
+  automatic code recognition is not supported.
+
+=item &jcode'z2h_xxx(*line)
+
+  JIS X0208 to JIS X0201 KANA code conversion routine.
+  String xxx is any of "jis", "sjis", "euc" and "utf8".
+
+=item $jcode'z2hf{'xxx'}
+
+=item $jcode'h2zf{'xxx'}
+
+  These are pointer to the corresponding function just
+  as $jcode'convf.
+
+=item &jcode'tr(*line, $from, $to [, $option])
+
+  &jcode'tr emulates tr operator for 2 byte code.  Only 'd'
+  is interpreted as an option.
+
+  Range operator like `A-Z' for 2 byte code is partially
+  supported.  Code must be JIS or EUC, and first byte
+  have to be same on first and last character.
+
+  CAUTION: Handling range operator is a kind of trick
+  and it is not perfect.  So if you need to transfer `-'
+  character, please be sure to put it at the beginning
+  or the end of $from and $to strings.
+
+=item &jcode'trans($line, $from, $to [, $option])
+
+  Same as &jcode'tr but accept string and return string
+  after translation.
+
+=item &jcode'init()
+
+  Initialize the variables used in this package.  You
+  don't have to call this when using jocde.pl by `do' or
+  `require' interface.  Call it first if you embedded
+  the jacode.pl at the end of your script.
+
+=back
+
+=head1 PERL5 INTERFACE
+
+  Current jacode.pl is written in Perl 4 but it is possible to use
+  from Perl 5 using `references'.  Fully perl5 capable version is
+  future issue.
+
+  Since lexical variable is not a subject of typeglob, *string style
+  call doesn't work if the variable is declared as `my'.  Same thing
+  happens to special variable $_ if the perl is compiled to use
+  thread capability.  So using reference is generally recommented to
+  avoid the mysterious error.
+
+=over 4
+
+=item jcode::getcode(\$line)
+
+=item jcode::convert(\$line, $ocode [, $icode [, $option]])
+
+=item jcode::xxx2yyy(\$line [, $option])
+
+=item &{$jcode::convf{'xxx', 'yyy'}}(\$line)
+
+=item jcode::to($ocode, $line [, $icode [, $option]])
+
+=item jcode::jis($line [, $icode [, $option]])
+
+=item jcode::euc($line [, $icode [, $option]])
+
+=item jcode::sjis($line [, $icode [, $option]])
+
+=item jcode::utf8($line [, $icode [, $option]])
+
+=item jcode::jis_inout($in, $out)
+
+=item jcode::get_inout($string)
+
+=item jcode::cache()
+
+=item jcode::nocache()
+
+=item jcode::flushcache()
+
+=item jcode::h2z_xxx(\$line)
+
+=item jcode::z2h_xxx(\$line)
+
+=item &{$jcode::z2hf{'xxx'}}(\$line)
+
+=item &{$jcode::h2zf{'xxx'}}(\$line)
+
+=item jcode::tr(\$line, $from, $to [, $option])
+
+=item jcode::trans($line, $from, $to [, $option])
+
+=item jcode::init()
+
+=back
+
+=head1 SAMPLES
+
+Convert any Kanji code to JIS and print each line with code name.
+
+  # require 'jcode.pl';
+  require 'jacode.pl';
+  while (defined($s = <>)) {
+      $code = &jcode'convert(*s, 'jis');
+      print $code, "\t", $s;
+  }
+
+Convert all lines to JIS according to the first recognized line.
+
+  # require 'jcode.pl';
+  require 'jacode.pl';
+  while (defined($s = <>)) {
+      print, next unless $s =~ /[\033\200-\377]/;
+      (*f, $icode) = &jcode'convert(*s, 'jis');
+      print;
+      defined(&f) || next;
+      while (<>) { &f(*s); print; }
+      last;
+  }
+
+The safest way of JIS conversion.
+
+  # require 'jcode.pl';
+  require 'jacode.pl';
+  while (defined($s = <>)) {
+      ($matched, $icode) = &jcode'getcode(*s);
+      if (@buf == 0 && $matched == 0) {
+          print $s;
+          next;
+      }
+      push(@buf, $s);
+      next unless $icode;
+      while (defined($s = shift(@buf))) {
+          &jcode'convert(*s, 'jis', $icode);
+          print $s;
+      }
+      while (defined($s = <>)) {
+          &jcode'convert(*s, 'jis', $icode);
+          print $s;
+      }
+      last;
+  }
+  print @buf if @buf;
+
+Convert SJIS to UTF16-BE and print each line by perl 5.8.1 or later.
+
+  require 'jacode.pl';
+  use 5.8.1;
+  while (defined($s = <>)) {
+      jcode::convert(\$s, 'UTF16-BE', 'sjis');
+      print $s;
+  }
+
+Convert SJIS to MIME-Header-ISO_2022_JP and print each line by perl 5.8.1 or later.
+
+  require 'jacode.pl';
+  use 5.8.1;
+  while (defined($s = <>)) {
+      jcode::convert(\$s, 'MIME-Header-ISO_2022_JP', 'sjis');
+      print $s;
+  }
 
 =head1 BUGS AND LIMITATIONS
 
@@ -9806,6 +10166,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  Pages: 1456
  ISBN 4-542-20129-5
  http://www.webstore.jsa.or.jp/lib/lib.asp?fn=/manual/mnl01_12.htm
+
+ Unicode NI YORU JIS X 0213 JISSOU NYUMON
+ Kenzaburo Tamaru
+ Pages: 200
+ ISBN 978-4-89100-608-2
+ http://ec.nikkeibp.co.jp/item/books/A04500.html
 
 =head1 ACKNOWLEDGEMENTS
 

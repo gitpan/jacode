@@ -41,6 +41,7 @@ ABSTRACT
 
     * jcode.pl upper compatible
     * Perl4 script
+    * Acts as a wrapper to Encode::from_to
     * Support HALFWIDTH KATAKANA
     * Support UTF-8 by cp932 to Unicode table
         http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
