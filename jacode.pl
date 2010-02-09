@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.3 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.4 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 
 ######################################################################
 #
@@ -270,6 +270,14 @@ q$Id: jacode.pl,v 2.13.4.3 alpha branched from jcode.pl,v 2.13 2000/09/29 16:10:
 #       last;
 #   }
 #   print @buf if @buf;
+#
+# Convert SJIS to UTF-8 and print each line by perl 4.036 or later.
+#
+#   require 'jacode.pl';
+#   while (defined($s = <>)) {
+#       &jcode'convert(*s, 'utf8', 'sjis');
+#       print $s;
+#   }
 #
 # Convert SJIS to UTF16-BE and print each line by perl 5.8.1 or later.
 #
@@ -1402,7 +1410,7 @@ sub init_h2z_utf8 {
 
 sub init_sjis2utf8 {
 
-    # avoid "Allocation too large" of perl version 4.036
+    # (1 of 2) avoid "Allocation too large" of perl 4.036
 
     %sjis2utf8_1 = split( /\s+/, <<'END' );
 8140 e38080
@@ -4978,6 +4986,9 @@ sub init_sjis2utf8 {
 9871 e7a297
 9872 e88595
 END
+
+    # (2 of 2) avoid "Allocation too large" of perl 4.036
+
     %sjis2utf8_2 = split( /\s+/, <<'END' );
 989f e5bc8c
 98a0 e4b890
@@ -9796,9 +9807,8 @@ From 'utf8' to 'sjis' is done by using the CP932.TXT and following
 table.
 
 PRB: Conversion Problem Between Shift-JIS and Unicode
-http://support.microsoft.com/kb/170559/en-us
 
-At present, Legacy Encoding Project is not supported.
+http://support.microsoft.com/kb/170559/en-us
 
 What's this software good for ...
 
@@ -9822,7 +9832,7 @@ What's this software good for ...
 
 =head1 DEPENDENCIES
 
-This software requires perl4.036 or later.
+This software requires perl 4.036 or later.
 
 =head1 PERL4 INTERFACE
 
@@ -9991,15 +10001,15 @@ This software requires perl4.036 or later.
 
 =head1 PERL5 INTERFACE
 
-  Current jacode.pl is written in Perl 4 but it is possible to use
-  from Perl 5 using `references'.  Fully perl5 capable version is
-  future issue.
+Current jacode.pl is written in Perl 4 but it is possible to use
+from Perl 5 using `references'.  Fully perl5 capable version is
+future issue.
 
-  Since lexical variable is not a subject of typeglob, *string style
-  call doesn't work if the variable is declared as `my'.  Same thing
-  happens to special variable $_ if the perl is compiled to use
-  thread capability.  So using reference is generally recommented to
-  avoid the mysterious error.
+Since lexical variable is not a subject of typeglob, *string style
+call doesn't work if the variable is declared as `my'.  Same thing
+happens to special variable $_ if the perl is compiled to use
+thread capability.  So using reference is generally recommented to
+avoid the mysterious error.
 
 =over 4
 
@@ -10095,6 +10105,14 @@ The safest way of JIS conversion.
   }
   print @buf if @buf;
 
+Convert SJIS to UTF-8 and print each line by perl 4.036 or later.
+
+  require 'jacode.pl';
+  while (defined($s = <>)) {
+      &jcode'convert(*s, 'utf8', 'sjis');
+      print $s;
+  }
+
 Convert SJIS to UTF16-BE and print each line by perl 5.8.1 or later.
 
   require 'jacode.pl';
@@ -10186,9 +10204,6 @@ I am thankful to all persons.
  ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
  http://mail.pm.org/pipermail/tokyo-pm/2002-March/001319.html
 
- Jeffrey E. F. Friedl, Mastering Regular Expressions
- http://www.oreilly.com/catalog/regex/index.html
-
  gama, getcode.pl
  http://www2d.biglobe.ne.jp/~gama/cgi/jcode/jcode.htm
 
@@ -10203,26 +10218,6 @@ I am thankful to all persons.
 
  Dan Kogai, Encode module
  http://search.cpan.org/dist/Encode/
-
- Japanese Unicode vender dependence character table
- http://www.ingrid.org/java/i18n/unicode.html
-
- XML Japanese profile explanation
- http://www.y-adagio.com/public/standards/tr_xml_jpf/kaisetsu.htm
-
- Japanese vender of OSF conference (OSF/JVC) recommendation
- The code conversion specification between shifts JIS Japanese EUC and code system investigation of actual conditions
- http://home.m05.itscom.net/numa/cde/sjis-euc/sjis-euc.html
-
- Problem and solution concerning Unicode and user definition character and vender definition character
- http://home.m05.itscom.net/numa/cde/ucs-conv/ucs-conv.html
-
- Legacy Encoding Project
- http://sourceforge.jp/projects/legacy-encoding/
- http://legacy-encoding.sourceforge.jp/wiki/
-
- MORIYAMA Masayuki, Encode::ISO2022JPMS module
- http://mail.pm.org/pipermail/tokyo-pm/2006-October/002164.html
 
  Tokyo-pm archive
  http://mail.pm.org/pipermail/tokyo-pm/

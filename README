@@ -31,10 +31,6 @@ SYNOPSIS
     $jcode'z2hf{'xxx'}
     $jcode'h2zf{'xxx'}
 
-NOTE
-
-    Please do not re-distribute yet because this software is still an alpha version.
-
 ABSTRACT
 
     This software has upper compatibility to jcode.pl.
@@ -60,7 +56,7 @@ INSTALLATION
 
 DEPENDENCIES
 
-    This software requires perl4.036 or later.
+    This software requires perl 4.036 or later.
 
 AUTHOR
 

@@ -1,5 +1,10 @@
 Revision history for this software.
 
+2.13.4.4 beta  2010/02/10 00:00:00
+	- fix comment.
+	- beta version.
+	created by INABA Hitoshi
+
 2.13.4.3 alpha  2010/02/04 00:00:00
 	- acts as a wrapper to Encode::from_to for perl 5.8.1 and later
 	  when $ocode or $icode is neither "jis", "sjis", "euc" nor "utf8".
