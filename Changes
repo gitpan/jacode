@@ -1,5 +1,11 @@
 Revision history for this software.
 
+2.13.4.5 beta  2010/03/06 00:00:00
+	- minor document corrections.
+	- &jcode'flush() support.
+	- turn off utf8 flag by Encode::encode_utf8.
+	created by INABA Hitoshi
+
 2.13.4.4 beta  2010/02/10 00:00:00
 	- fix comment.
 	- beta version.

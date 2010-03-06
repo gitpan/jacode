@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.4 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.5 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 
 ######################################################################
 #
@@ -133,12 +133,15 @@ q$Id: jacode.pl,v 2.13.4.4 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:0
 #   &jcode'cache()
 #   &jcode'nocache()
 #   &jcode'flushcache()
+#   &jcode'flush()
 #       Usually, converted character is cached in memory to
 #       avoid same calculations have to be done many times.
 #       To disable this caching, call &jcode'nocache().  It
 #       can be revived by &jcode'cache() and cache is flushed
 #       by calling &jcode'flushcache().  &cache() and &nocache()
 #       functions return previous caching state.
+#       &jcode'flush() is an alias of &jcode'flushcache() to save
+#       an old document.
 #
 #   ---------------------------------------------------------------
 #
@@ -213,6 +216,7 @@ q$Id: jacode.pl,v 2.13.4.4 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:0
 #   jcode::cache()
 #   jcode::nocache()
 #   jcode::flushcache()
+#   jcode::flush()
 #   jcode::h2z_xxx(\$line)
 #   jcode::z2h_xxx(\$line)
 #   &{$jcode::z2hf{'xxx'}}(\$line)
@@ -622,6 +626,20 @@ sub convert {
     $ocode = 'jis' unless $ocode;
     $ocode = $icode if $ocode eq 'noconv';
     local (*f) = $convf{ $icode, $ocode };
+    if ( $icode eq 'utf8' ) {
+
+        # http://blog.livedoor.jp/dankogai/archives/50116398.html
+        # http://blog.livedoor.jp/dankogai/archives/51004472.html
+
+        eval q{ use Encode; };
+        unless ($@) {
+            eval q<
+                if (Encode::is_utf8($s)) {
+                    $s = Encode::encode_utf8($s);
+                }
+            >;
+        }
+    }
     if ( $convf{ $icode, $ocode } ) {
         &f( *s, $opt );
     }
@@ -631,6 +649,7 @@ sub convert {
             eval q{ Encode::from_to( $s, $icode, $ocode ); };
         }
     }
+
     wantarray ? ( *f, $icode ) : $icode;
 }
 
@@ -1137,6 +1156,10 @@ sub nocache {
     local ($previous) = $cache;
     $cache = 0;
     $previous;
+}
+
+sub flush {
+    &flushcache();
 }
 
 sub flushcache {
@@ -9757,6 +9780,7 @@ jacode.pl - Perl library for Japanese character code conversion
     &jcode'cache()
     &jcode'nocache()
     &jcode'flushcache()
+    &jcode'flush()
     &jcode'h2z_xxx(*line)
     &jcode'z2h_xxx(*line)
     &jcode'tr(*line, $from, $to [, $option])
@@ -9782,6 +9806,7 @@ jacode.pl - Perl library for Japanese character code conversion
     jcode::cache()
     jcode::nocache()
     jcode::flushcache()
+    jcode::flush()
     jcode::h2z_xxx(\$line)
     jcode::z2h_xxx(\$line)
     jcode::tr(\$line, $from, $to [, $option])
@@ -9824,7 +9849,9 @@ What's this software good for ...
 
 =item * Support UTF-8
 
-=item * No UTF8 flag
+=item * Hidden UTF8 flag
+
+=item * No object-oriented programming
 
 =item * Possible to re-use past code and how to
 
@@ -9944,12 +9971,16 @@ This software requires perl 4.036 or later.
 
 =item &jcode'flushcache()
 
+=item &jcode'flush()
+
   Usually, converted character is cached in memory to
   avoid same calculations have to be done many times.
   To disable this caching, call &jcode'nocache().  It
   can be revived by &jcode'cache() and cache is flushed
   by calling &jcode'flushcache().  &cache() and &nocache()
   functions return previous caching state.
+  &jcode'flush() is an alias of &jcode'flushcache() to save
+  an old document.
 
 =item &jcode'h2z_xxx(*line)
 
@@ -10040,6 +10071,8 @@ avoid the mysterious error.
 =item jcode::nocache()
 
 =item jcode::flushcache()
+
+=item jcode::flush()
 
 =item jcode::h2z_xxx(\$line)
 
@@ -10216,8 +10249,17 @@ I am thankful to all persons.
  NAKATA Yoshinori, Ad hoc patch for reduce waring on h2z_euc
  http://white.niu.ne.jp/yapw/yapw.cgi/jcode.pl%A4%CE%A5%A8%A5%E9%A1%BC%CD%DE%C0%A9
 
- Dan Kogai, Encode module
+ Dan Kogai, Jcode module and Encode module
+ http://search.cpan.org/dist/Jcode/
  http://search.cpan.org/dist/Encode/
+ http://blog.livedoor.jp/dankogai/archives/50116398.html
+ http://blog.livedoor.jp/dankogai/archives/51004472.html
+
+ Donzoko CGI+--, Jcode like Encode Wrapper
+ http://www.donzoko.net/cgi/jencode/
+
+ Yusuke Kawasaki, Encode561 module
+ http://www.kawa.net/works/perl/i18n-emoji/i18n-emoji.html#Encode561
 
  Tokyo-pm archive
  http://mail.pm.org/pipermail/tokyo-pm/
