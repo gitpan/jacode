@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.5 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.6 rc1 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 
 ######################################################################
 #
@@ -231,7 +231,7 @@ q$Id: jacode.pl,v 2.13.4.5 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:0
 #
 # Convert any Kanji code to JIS and print each line with code name.
 #
-#   # require 'jcode.pl';
+#   #require 'jcode.pl';
 #   require 'jacode.pl';
 #   while (defined($s = <>)) {
 #       $code = &jcode'convert(*s, 'jis');
@@ -240,7 +240,7 @@ q$Id: jacode.pl,v 2.13.4.5 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:0
 #
 # Convert all lines to JIS according to the first recognized line.
 #
-#   # require 'jcode.pl';
+#   #require 'jcode.pl';
 #   require 'jacode.pl';
 #   while (defined($s = <>)) {
 #       print, next unless $s =~ /[\033\200-\377]/;
@@ -253,7 +253,7 @@ q$Id: jacode.pl,v 2.13.4.5 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:0
 #
 # The safest way of JIS conversion.
 #
-#   # require 'jcode.pl';
+#   #require 'jcode.pl';
 #   require 'jacode.pl';
 #   while (defined($s = <>)) {
 #       ($matched, $icode) = &jcode'getcode(*s);
@@ -277,6 +277,7 @@ q$Id: jacode.pl,v 2.13.4.5 beta branched from jcode.pl,v 2.13 2000/09/29 16:10:0
 #
 # Convert SJIS to UTF-8 and print each line by perl 4.036 or later.
 #
+#   #retire 'jcode.pl';
 #   require 'jacode.pl';
 #   while (defined($s = <>)) {
 #       &jcode'convert(*s, 'utf8', 'sjis');
@@ -10094,7 +10095,7 @@ avoid the mysterious error.
 
 Convert any Kanji code to JIS and print each line with code name.
 
-  # require 'jcode.pl';
+  #require 'jcode.pl';
   require 'jacode.pl';
   while (defined($s = <>)) {
       $code = &jcode'convert(*s, 'jis');
@@ -10103,7 +10104,7 @@ Convert any Kanji code to JIS and print each line with code name.
 
 Convert all lines to JIS according to the first recognized line.
 
-  # require 'jcode.pl';
+  #require 'jcode.pl';
   require 'jacode.pl';
   while (defined($s = <>)) {
       print, next unless $s =~ /[\033\200-\377]/;
@@ -10116,7 +10117,7 @@ Convert all lines to JIS according to the first recognized line.
 
 The safest way of JIS conversion.
 
-  # require 'jcode.pl';
+  #require 'jcode.pl';
   require 'jacode.pl';
   while (defined($s = <>)) {
       ($matched, $icode) = &jcode'getcode(*s);
@@ -10140,6 +10141,7 @@ The safest way of JIS conversion.
 
 Convert SJIS to UTF-8 and print each line by perl 4.036 or later.
 
+  #retire 'jcode.pl';
   require 'jacode.pl';
   while (defined($s = <>)) {
       &jcode'convert(*s, 'utf8', 'sjis');

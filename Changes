@@ -1,31 +1,36 @@
 Revision history for this software.
 
-2.13.4.5 beta  2010/03/06 00:00:00
+2.13.4.6 rc1 2010/04/06 00:00:00
+	- fix comment.
+	- release candidate 1.
+	created by INABA Hitoshi
+
+2.13.4.5 beta 2010/03/06 00:00:00
 	- minor document corrections.
 	- &jcode'flush() support.
 	- turn off utf8 flag by Encode::encode_utf8.
 	created by INABA Hitoshi
 
-2.13.4.4 beta  2010/02/10 00:00:00
+2.13.4.4 beta 2010/02/10 00:00:00
 	- fix comment.
 	- beta version.
 	created by INABA Hitoshi
 
-2.13.4.3 alpha  2010/02/04 00:00:00
+2.13.4.3 alpha 2010/02/04 00:00:00
 	- acts as a wrapper to Encode::from_to for perl 5.8.1 and later
 	  when $ocode or $icode is neither "jis", "sjis", "euc" nor "utf8".
 	created by INABA Hitoshi
 
-2.13.4.2 alpha  2010/01/25 00:00:00
+2.13.4.2 alpha 2010/01/25 00:00:00
 	- add comment
 	created by INABA Hitoshi
 
-2.13.4.1 alpha  2010/01/21 00:00:00
+2.13.4.1 alpha 2010/01/21 00:00:00
 	- Support jperl4
 	- POD document
 	- rewrite test.pl in Perl4
 	created by INABA Hitoshi
 
-2.13.4.0 alpha  2010/01/19 00:00:00
+2.13.4.0 alpha 2010/01/19 00:00:00
 	- branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp
 	created by INABA Hitoshi
