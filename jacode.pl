@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.6 rc1 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.7 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 
 ######################################################################
 #
@@ -876,7 +876,7 @@ sub utf82jis {
 sub _utf82jis {
     local ($u) = @_;
     if ( $u =~ /^($re_utf8_kana)/o ) {
-        &init_u2k unless defined %u2k;
+        &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
         $u =~ tr/\241-\376/\041-\176/;
         $esc_kana . $u;
@@ -901,7 +901,7 @@ sub utf82euc {
 sub _utf82euc {
     local ($u) = @_;
     if ( $u =~ /^($re_utf8_kana)/o ) {
-        &init_u2k unless defined %u2k;
+        &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/"\216".$u2k{$1}/geo;
     }
     else {
@@ -936,7 +936,7 @@ sub utf82sjis {
 sub _utf82sjis {
     local ($u) = @_;
     if ( $u =~ /^($re_utf8_kana)$/o ) {
-        &init_u2k unless defined %u2k;
+        &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
     }
     else {
@@ -948,7 +948,7 @@ sub _utf82sjis {
 sub u2s {
     local ($utf8);
     local ($code) = @_;
-    &init_utf82sjis unless defined %utf82sjis_1;
+    &init_utf82sjis unless %utf82sjis_1;
     $utf8 = unpack( 'H*', $code );
     if ( defined $JP170559{$utf8} ) {
         if ($cache) {
@@ -995,7 +995,7 @@ sub _jis2utf8 {
         $n += $s =~ s/[\x00-\xff][\x00-\xff]/$undef_utf8/g;
     }
     elsif ( $esc =~ /^$re_kana/o ) {
-        &init_k2u unless defined %k2u;
+        &init_k2u unless %k2u;
         $n += $s =~ tr/\041-\176/\241-\376/;
         $s =~ s/([\x00-\xff])/$k2u{$1}/ge;
     }
@@ -1024,7 +1024,7 @@ sub _euc2utf8 {
         $n += $s =~ s/[\x00-\xff][\x00-\xff]/$undef_utf8/g;
     }
     elsif ( $s =~ /^$re_euc_kana/o ) {
-        &init_k2u unless defined %k2u;
+        &init_k2u unless %k2u;
         $n += $s =~ s/\216([\x00-\xff])/$k2u{$1}/ge;
     }
     else {
@@ -1044,7 +1044,7 @@ sub e2u {
         $c1 = ( $c1 >> 1 ) + ( $c1 < 0xdf ? 0x30 : 0x70 );
         $c2 -= 2;
     }
-    &init_sjis2utf8 unless defined %sjis2utf8_1;
+    &init_sjis2utf8 unless %sjis2utf8_1;
     $sjis = unpack( 'H*', pack( 'CC', $c1, $c2 ) );
     if ( defined $sjis2utf8_1{$sjis} ) {
         if ($cache) {
@@ -1080,7 +1080,7 @@ sub sjis2utf8 {
 sub _sjis2utf8 {
     local ($s) = @_;
     if ( $s =~ /^$re_sjis_kana/o ) {
-        &init_k2u unless defined %k2u;
+        &init_k2u unless %k2u;
         $n += $s =~ s/([\x00-\xff])/$k2u{$1}/ge;
     }
     else {
@@ -1092,7 +1092,7 @@ sub _sjis2utf8 {
 sub s2u {
     local ($sjis);
     local ($code) = @_;
-    &init_sjis2utf8 unless defined %sjis2utf8_1;
+    &init_sjis2utf8 unless %sjis2utf8_1;
     $sjis = unpack( 'H*', $code );
     if ( defined $sjis2utf8_1{$sjis} ) {
         if ($cache) {
@@ -1214,7 +1214,7 @@ sub h2z_sjis {
 
 sub h2z_utf8 {
     local ( *s, $n ) = @_;
-    &init_h2z_utf8 unless defined %h2z_utf8;
+    &init_h2z_utf8 unless %h2z_utf8;
     $s =~
 s/($re_utf8_voiced_kana|$re_utf8_c)/$h2z_utf8{$1} ? ($n++, $h2z_utf8{$1}) : $1/geo;
     $n;
@@ -1247,7 +1247,7 @@ sub __z2h_jis {
 
 sub z2h_euc {
     local ( *s, $n ) = @_;
-    &init_z2h_euc unless defined %z2h_euc;
+    &init_z2h_euc unless %z2h_euc;
     $s =~ s/($re_euc_c|$re_euc_kana)/
     $z2h_euc{$1} ? ($n++, $z2h_euc{$1}) : $1
     /geo;
@@ -1256,14 +1256,14 @@ sub z2h_euc {
 
 sub z2h_sjis {
     local ( *s, $n ) = @_;
-    &init_z2h_sjis unless defined %z2h_sjis;
+    &init_z2h_sjis unless %z2h_sjis;
     $s =~ s/($re_sjis_c)/$z2h_sjis{$1} ? ($n++, $z2h_sjis{$1}) : $1/geo;
     $n;
 }
 
 sub z2h_utf8 {
     local ( *s, $n ) = @_;
-    &init_z2h_utf8 unless defined %z2h_utf8;
+    &init_z2h_utf8 unless %z2h_utf8;
     $s =~ s/($re_utf8_c)/$z2h_utf8{$1} ? ($n++, $z2h_utf8{$1}) : $1/geo;
     $n;
 }
@@ -1383,7 +1383,7 @@ e3839d efbe8eefbe9f
 END
 
 sub init_z2h_utf8 {
-    if ( defined %h2z_utf8 ) {
+    if (%h2z_utf8) {
         %z2h_utf8 = reverse %h2z_utf8;
         if ( scalar( keys %z2h_utf8 ) != scalar( keys %h2z_utf8 ) ) {
             die "scalar(keys %z2h_utf8) != scalar(keys %h2z_utf8).";
@@ -1398,7 +1398,7 @@ sub init_z2h_utf8 {
 }
 
 sub init_h2z_utf8 {
-    if ( defined %z2h_utf8 ) {
+    if (%z2h_utf8) {
         %h2z_utf8 = reverse %z2h_utf8;
         if ( scalar( keys %h2z_utf8 ) != scalar( keys %z2h_utf8 ) ) {
             die "scalar(keys %h2z_utf8) != scalar(keys %z2h_utf8).";
@@ -9170,7 +9170,7 @@ END
 }
 
 sub init_utf82sjis {
-    &init_sjis2utf8 unless defined %sjis2utf8_1;
+    &init_sjis2utf8 unless %sjis2utf8_1;
     %utf82sjis_1 = reverse %sjis2utf8_1;
     %utf82sjis_2 = reverse %sjis2utf8_2;
 
@@ -9646,7 +9646,7 @@ df efbe9f
 END
 
 sub init_k2u {
-    if ( defined %u2k ) {
+    if (%u2k) {
         %k2u = reverse %u2k;
         if ( scalar( keys %k2u ) != scalar( keys %u2k ) ) {
             die "scalar(keys %k2u) != scalar(keys %u2k).";
@@ -9661,7 +9661,7 @@ sub init_k2u {
 }
 
 sub init_u2k {
-    if ( defined %k2u ) {
+    if (%k2u) {
         %u2k = reverse %k2u;
         if ( scalar( keys %u2k ) != scalar( keys %k2u ) ) {
             die "scalar(keys %u2k) != scalar(keys %k2u).";

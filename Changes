@@ -1,5 +1,9 @@
 Revision history for this software.
 
+2.13.4.7 2010/04/18 00:00:00
+	- avoid perl5.12 warning "defined(%hash) is deprecated at ...".
+	created by INABA Hitoshi
+
 2.13.4.6 rc1 2010/04/06 00:00:00
 	- fix comment.
 	- release candidate 1.
