@@ -35,7 +35,9 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.7 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.8 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+$VERSION = sprintf('%d.%02d%02d%02d', $rcsid =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+$VERSION = $VERSION;
 
 ######################################################################
 #
@@ -367,6 +369,19 @@ sub init {
         '(\xef\xbd[\xb3\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf]'
       . '|\xef\xbe[\x80\x81\x82\x83\x84\x8a\x8b\x8c\x8d\x8e])\xef\xbe\x9e'
       . '|\xef\xbe[\x8a\x8b\x8c\x8d\x8e]\xef\xbe\x9f';
+    $re_utf8_notkana =
+        '[\xc2-\xdf][\x80-\xbf]'
+      . '|[\xe0-\xe0][\xa0-\xbf][\x80-\xbf]'
+      . '|[\xe1-\xec][\x80-\xbf][\x80-\xbf]'
+      . '|[\xed-\xed][\x80-\x9f][\x80-\xbf]'
+      . '|[\xee-\xee][\x80-\xbf][\x80-\xbf]'
+      . '|[\xef-\xef][\x80-\xbc][\x80-\xbf]'
+      . '|[\xef-\xef][\xbd-\xbd][\x80-\xa0]'
+      . '|[\xef-\xef][\xbe-\xbe][\xa0-\xbf]'
+      . '|[\xef-\xef][\xbf-\xbf][\x80-\xbf]'
+      . '|[\xf0-\xf0][\x90-\xbf][\x80-\xbf][\x80-\xbf]'
+      . '|[\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]'
+      . '|[\xf4-\xf4][\x80-\x8f][\x80-\xbf][\x80-\xbf]';
 
     # Use `geta' for undefined character code
     $undef_sjis = "\x81\xac";
@@ -869,20 +884,20 @@ sub e2s {
 sub utf82jis {
     local ( *u, $opt, $n ) = @_;
     &utf82utf8( *u, $opt ) if $opt;
-    $u =~ s/(($re_utf8_kana)+|($re_utf8_c)+)/&_utf82jis($1) . $esc_asc/geo;
+    $u =~ s/(($re_utf8_kana)+|($re_utf8_notkana)+)/&_utf82jis($1) . $esc_asc/geo;
     $n;
 }
 
 sub _utf82jis {
     local ($u) = @_;
-    if ( $u =~ /^($re_utf8_kana)/o ) {
+    if ( $u =~ /^$re_utf8_kana/o ) {
         &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
         $u =~ tr/\241-\376/\041-\176/;
         $esc_kana . $u;
     }
     else {
-        $n += $u =~ s/($re_utf8_c)/$u2e{$1}||&u2e($1)/geo;
+        $n += $u =~ s/($re_utf8_notkana)/$u2e{$1}||&u2e($1)/geo;
         $u =~ tr/\241-\376/\041-\176/;
         $esc_0208 . $u;
     }
@@ -893,19 +908,19 @@ sub _utf82jis {
 #
 sub utf82euc {
     local ( *u, $opt, $n ) = @_;
-    $u =~ s/(($re_utf8_kana)+|($re_utf8_c)+)/&_utf82euc($1)/geo;
-    &euc2euc( *u, $opt ) if $opt;
+    &utf82utf8( *u, $opt ) if $opt;
+    $u =~ s/(($re_utf8_kana)+|($re_utf8_notkana)+)/&_utf82euc($1)/geo;
     $n;
 }
 
 sub _utf82euc {
     local ($u) = @_;
-    if ( $u =~ /^($re_utf8_kana)/o ) {
+    if ( $u =~ /^$re_utf8_kana/o ) {
         &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/"\216".$u2k{$1}/geo;
     }
     else {
-        $n += $u =~ s/($re_utf8_c)/$u2e{$1}||&u2e($1)/geo;
+        $n += $u =~ s/($re_utf8_notkana)/$u2e{$1}||&u2e($1)/geo;
     }
     $u;
 }
@@ -929,18 +944,18 @@ sub u2e {
 sub utf82sjis {
     local ( *u, $opt, $n ) = @_;
     &utf82utf8( *u, $opt ) if $opt;
-    $u =~ s/(($re_utf8_kana)+|($re_utf8_c)+)/&_utf82sjis($1)/geo;
+    $u =~ s/(($re_utf8_kana)+|($re_utf8_notkana)+)/&_utf82sjis($1)/geo;
     $n;
 }
 
 sub _utf82sjis {
     local ($u) = @_;
-    if ( $u =~ /^($re_utf8_kana)$/o ) {
+    if ( $u =~ /^$re_utf8_kana/o ) {
         &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
     }
     else {
-        $n += $u =~ s/($re_utf8_c)/$u2s{$1}||&u2s($1)/geo;
+        $n += $u =~ s/($re_utf8_notkana)/$u2s{$1}||&u2s($1)/geo;
     }
     $u;
 }
@@ -9827,14 +9842,14 @@ to 'JA Group Organization'.
 The code conversion from 'sjis' to 'utf8' is done by using following
 table.
 
-http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
+L<http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT>
 
 From 'utf8' to 'sjis' is done by using the CP932.TXT and following
 table.
 
 PRB: Conversion Problem Between Shift-JIS and Unicode
 
-http://support.microsoft.com/kb/170559/en-us
+L<http://support.microsoft.com/kb/170559/en-us>
 
 What's this software good for ...
 
@@ -9864,7 +9879,7 @@ This software requires perl 4.036 or later.
 
 =head1 PERL4 INTERFACE
 
-=over 4
+=over 2
 
 =item &jcode'getcode(*line)
 
@@ -10043,7 +10058,7 @@ happens to special variable $_ if the perl is compiled to use
 thread capability.  So using reference is generally recommented to
 avoid the mysterious error.
 
-=over 4
+=over 2
 
 =item jcode::getcode(\$line)
 
@@ -10172,11 +10187,26 @@ You must use -Llatin switch if you use on the JPerl.
 
 =head1 AUTHOR
 
-This project was originated by INABA Hitoshi E<lt>ina@cpan.orgE<gt>.
+This project was originated by Kazumasa Utashiro E<lt>utashiro@iij.ad.jpE<gt>.
 
 =head1 LICENSE AND COPYRIGHT
 
 This software is free software;
+
+Copyright (c) 2010 INABA Hitoshi E<lt>ina@cpan.org>E<gt>
+
+The latest version is available here:
+
+L<http://search.cpan.org/dist/jacode/>
+
+Original version `jcode.pl' is ...
+
+Copyright (c) 1995-2000 Kazumasa Utashiro E<lt>utashiro@iij.ad.jpE<gt>
+Internet Initiative Japan Inc.
+3-13 Kanda Nishiki-cho, Chiyoda-ku, Tokyo 101-0054, Japan
+
+Copyright (c) 1992,1993,1994 Kazumasa Utashiro
+Software Research Associates, Inc.
 
 Use and redistribution for ANY PURPOSE are granted as long as all
 copyright notices are retained.  Redistribution with modification
@@ -10188,6 +10218,15 @@ DISCLAIMED.
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Original version was developed under the name of srekcah@sra.co.jp
+February 1992 and it was called kconv.pl at the beginning.  This
+address was a pen name for group of individuals and it is no longer
+valid.
+
+The latest version is available here:
+
+L<ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/>
 
 =head1 SEE ALSO
 

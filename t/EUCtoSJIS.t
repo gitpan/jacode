@@ -2,7 +2,7 @@ require 'jacode.pl';
 
 while (<>) {
     chop;
-    &jcode'convert(*_, 'sjis');
+    &jcode'convert(*_, 'sjis', 'euc');
     print $_, "\n";
 }
 

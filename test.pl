@@ -50,7 +50,7 @@ END
     $tno++;
 }
 
-# JIS to Any
+# JIS to Any Kanji
 for $script (split(' ',<<'END')) {
     JIStoEUC.t
     JIStoSJIS.t
@@ -58,15 +58,15 @@ for $script (split(' ',<<'END')) {
 END
     system(qq{$^X $opt -I.. $script jis.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
-        print "ok - $tno $script\n";
+        print "ok - $tno $script (Kanji)\n";
     }
     else{
-        print "not ok - $tno $script\n";
+        print "not ok - $tno $script (Kanji)\n";
     }
     $tno++;
 }
 
-# SJIS to Any
+# SJIS to Any Kanji
 for $script (split(' ',<<'END')) {
     SJIStoJIS.t
     SJIStoEUC.t
@@ -74,15 +74,15 @@ for $script (split(' ',<<'END')) {
 END
     system(qq{$^X $opt -I.. $script sjis.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
-        print "ok - $tno $script\n";
+        print "ok - $tno $script (Kanji)\n";
     }
     else{
-        print "not ok - $tno $script\n";
+        print "not ok - $tno $script (Kanji)\n";
     }
     $tno++;
 }
 
-# EUC to Any
+# EUC to Any Kanji
 for $script (split(' ',<<'END')) {
     EUCtoJIS.t
     EUCtoSJIS.t
@@ -90,15 +90,15 @@ for $script (split(' ',<<'END')) {
 END
     system(qq{$^X $opt -I.. $script euc.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
-        print "ok - $tno $script\n";
+        print "ok - $tno $script (Kanji)\n";
     }
     else{
-        print "not ok - $tno $script\n";
+        print "not ok - $tno $script (Kanji)\n";
     }
     $tno++;
 }
 
-# UTF8 to Any
+# UTF8 to Any Kanji
 for $script (split(' ',<<'END')) {
     UTF8toJIS.t
     UTF8toSJIS.t
@@ -106,10 +106,74 @@ for $script (split(' ',<<'END')) {
 END
     system(qq{$^X $opt -I.. $script utf8.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
-        print "ok - $tno $script\n";
+        print "ok - $tno $script (Kanji)\n";
     }
     else{
-        print "not ok - $tno $script\n";
+        print "not ok - $tno $script (Kanji)\n";
+    }
+    $tno++;
+}
+
+# JIS to Any Kana
+for $script (split(' ',<<'END')) {
+    JIStoEUC.t
+    JIStoSJIS.t
+    JIStoUTF8.t
+END
+    system(qq{$^X $opt -I.. $script jis.kana.txt > $script.kana.txt});
+    if (&filecompare("$script.kana.txt","$script.kana.want")) {
+        print "ok - $tno $script (Kana)\n";
+    }
+    else{
+        print "not ok - $tno $script (Kana)\n";
+    }
+    $tno++;
+}
+
+# SJIS to Any Kana
+for $script (split(' ',<<'END')) {
+    SJIStoJIS.t
+    SJIStoEUC.t
+    SJIStoUTF8.t
+END
+    system(qq{$^X $opt -I.. $script sjis.kana.txt > $script.kana.txt});
+    if (&filecompare("$script.kana.txt","$script.kana.want")) {
+        print "ok - $tno $script (Kana)\n";
+    }
+    else{
+        print "not ok - $tno $script (Kana)\n";
+    }
+    $tno++;
+}
+
+# EUC to Any Kana
+for $script (split(' ',<<'END')) {
+    EUCtoJIS.t
+    EUCtoSJIS.t
+    EUCtoUTF8.t
+END
+    system(qq{$^X $opt -I.. $script euc.kana.txt > $script.kana.txt});
+    if (&filecompare("$script.kana.txt","$script.kana.want")) {
+        print "ok - $tno $script (Kana)\n";
+    }
+    else{
+        print "not ok - $tno $script (Kana)\n";
+    }
+    $tno++;
+}
+
+# UTF8 to Any Kana
+for $script (split(' ',<<'END')) {
+    UTF8toJIS.t
+    UTF8toSJIS.t
+    UTF8toEUC.t
+END
+    system(qq{$^X $opt -I.. $script utf8.kana.txt > $script.kana.txt});
+    if (&filecompare("$script.kana.txt","$script.kana.want")) {
+        print "ok - $tno $script (Kana)\n";
+    }
+    else{
+        print "not ok - $tno $script (Kana)\n";
     }
     $tno++;
 }
@@ -127,15 +191,16 @@ sub filecompare {
         if($_ ne $_2){
             print "file compare:\n";
             if (0) {
-                @_  = $_  =~ /([\x00-\xff][\x00-\xff])/g;
+                @_1 = $_  =~ /([\x00-\xff][\x00-\xff])/g;
                 @_2 = $_2 =~ /([\x00-\xff][\x00-\xff])/g;
-                while (@_) {
-                    $_ = shift @_;
+
+                while (@_2) {
+                    $_1 = shift @_1;
                     $_2 = shift @_2;
-                    if ($_ ne $_2) {
-                        $hex1 = unpack( 'H*', $_ );
+                    if ($_1 ne $_2) {
+                        $hex1 = unpack( 'H*', $_1 );
                         $hex2 = unpack( 'H*', $_2 );
-                        print "[$_]$hex1 <=> [$_2]$hex2\n";
+                        print "[$_1]$hex1 <=> [$_2]$hex2\n";
                     }
                 }
             }
@@ -144,8 +209,8 @@ sub filecompare {
                 print "file2[$_2]\n";
                 close(FILE1);
                 close(FILE2);
-                return 0;
             }
+            return 0;
         }
     }
     if(!eof(FILE1)){
