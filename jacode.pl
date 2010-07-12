@@ -35,7 +35,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.8 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.9 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 $VERSION = sprintf('%d.%02d%02d%02d', $rcsid =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/);
 $VERSION = $VERSION;
 
@@ -369,7 +369,7 @@ sub init {
         '(\xef\xbd[\xb3\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf]'
       . '|\xef\xbe[\x80\x81\x82\x83\x84\x8a\x8b\x8c\x8d\x8e])\xef\xbe\x9e'
       . '|\xef\xbe[\x8a\x8b\x8c\x8d\x8e]\xef\xbe\x9f';
-    $re_utf8_notkana =
+    $re_utf8_not_kana =
         '[\xc2-\xdf][\x80-\xbf]'
       . '|[\xe0-\xe0][\xa0-\xbf][\x80-\xbf]'
       . '|[\xe1-\xec][\x80-\xbf][\x80-\xbf]'
@@ -884,7 +884,7 @@ sub e2s {
 sub utf82jis {
     local ( *u, $opt, $n ) = @_;
     &utf82utf8( *u, $opt ) if $opt;
-    $u =~ s/(($re_utf8_kana)+|($re_utf8_notkana)+)/&_utf82jis($1) . $esc_asc/geo;
+    $u =~ s/(($re_utf8_kana)+|($re_utf8_not_kana)+)/&_utf82jis($1) . $esc_asc/geo;
     $n;
 }
 
@@ -897,7 +897,7 @@ sub _utf82jis {
         $esc_kana . $u;
     }
     else {
-        $n += $u =~ s/($re_utf8_notkana)/$u2e{$1}||&u2e($1)/geo;
+        $n += $u =~ s/($re_utf8_not_kana)/$u2e{$1}||&u2e($1)/geo;
         $u =~ tr/\241-\376/\041-\176/;
         $esc_0208 . $u;
     }
@@ -909,7 +909,7 @@ sub _utf82jis {
 sub utf82euc {
     local ( *u, $opt, $n ) = @_;
     &utf82utf8( *u, $opt ) if $opt;
-    $u =~ s/(($re_utf8_kana)+|($re_utf8_notkana)+)/&_utf82euc($1)/geo;
+    $u =~ s/(($re_utf8_kana)+|($re_utf8_not_kana)+)/&_utf82euc($1)/geo;
     $n;
 }
 
@@ -920,7 +920,7 @@ sub _utf82euc {
         $n += $u =~ s/($re_utf8_kana)/"\216".$u2k{$1}/geo;
     }
     else {
-        $n += $u =~ s/($re_utf8_notkana)/$u2e{$1}||&u2e($1)/geo;
+        $n += $u =~ s/($re_utf8_not_kana)/$u2e{$1}||&u2e($1)/geo;
     }
     $u;
 }
@@ -944,20 +944,8 @@ sub u2e {
 sub utf82sjis {
     local ( *u, $opt, $n ) = @_;
     &utf82utf8( *u, $opt ) if $opt;
-    $u =~ s/(($re_utf8_kana)+|($re_utf8_notkana)+)/&_utf82sjis($1)/geo;
+    $n += $u =~ s/($re_utf8_c)/$u2s{$1}||&u2s($1)/geo;
     $n;
-}
-
-sub _utf82sjis {
-    local ($u) = @_;
-    if ( $u =~ /^$re_utf8_kana/o ) {
-        &init_u2k unless %u2k;
-        $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
-    }
-    else {
-        $n += $u =~ s/($re_utf8_notkana)/$u2s{$1}||&u2s($1)/geo;
-    }
-    $u;
 }
 
 sub u2s {
@@ -1452,6 +1440,69 @@ sub init_sjis2utf8 {
     # (1 of 2) avoid "Allocation too large" of perl 4.036
 
     %sjis2utf8_1 = split( /\s+/, <<'END' );
+a1 efbda1
+a2 efbda2
+a3 efbda3
+a4 efbda4
+a5 efbda5
+a6 efbda6
+a7 efbda7
+a8 efbda8
+a9 efbda9
+aa efbdaa
+ab efbdab
+ac efbdac
+ad efbdad
+ae efbdae
+af efbdaf
+b0 efbdb0
+b1 efbdb1
+b2 efbdb2
+b3 efbdb3
+b4 efbdb4
+b5 efbdb5
+b6 efbdb6
+b7 efbdb7
+b8 efbdb8
+b9 efbdb9
+ba efbdba
+bb efbdbb
+bc efbdbc
+bd efbdbd
+be efbdbe
+bf efbdbf
+c0 efbe80
+c1 efbe81
+c2 efbe82
+c3 efbe83
+c4 efbe84
+c5 efbe85
+c6 efbe86
+c7 efbe87
+c8 efbe88
+c9 efbe89
+ca efbe8a
+cb efbe8b
+cc efbe8c
+cd efbe8d
+ce efbe8e
+cf efbe8f
+d0 efbe90
+d1 efbe91
+d2 efbe92
+d3 efbe93
+d4 efbe94
+d5 efbe95
+d6 efbe96
+d7 efbe97
+d8 efbe98
+d9 efbe99
+da efbe9a
+db efbe9b
+dc efbe9c
+dd efbe9d
+de efbe9e
+df efbe9f
 8140 e38080
 8141 e38081
 8142 e38082
@@ -10277,6 +10328,9 @@ I am thankful to all persons.
  Kazumasa Utashiro, jcode.pl
  ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
  http://mail.pm.org/pipermail/tokyo-pm/2002-March/001319.html
+
+ mikeneko creator club, Private manual of jcode.pl
+ http://mikeneko.creator.club.ne.jp/~lab/kcode/jcode.html
 
  gama, getcode.pl
  http://www2d.biglobe.ne.jp/~gama/cgi/jcode/jcode.htm
