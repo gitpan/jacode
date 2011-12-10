@@ -38,7 +38,7 @@ ABSTRACT
 
     * jcode.pl upper compatible
     * Perl4 script
-    * Acts as a wrapper to Encode::from_to
+    * Acts as a wrapper to Encode::from_to (Yes, not only Japanese!)
     * Support HALFWIDTH KATAKANA
     * Support UTF-8 by cp932 to Unicode table
         http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
@@ -64,7 +64,7 @@ AUTHOR
 
     Copyright (c) 1992,1993,1994 Kazumasa Utashiro
     Copyright (c) 1995-2000 Kazumasa Utashiro
-    Copyright (c) 2010 INABA Hitoshi
+    Copyright (c) 2010, 2011 INABA Hitoshi
 
 LICENSE AND COPYRIGHT
 

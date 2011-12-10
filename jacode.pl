@@ -3,11 +3,15 @@ package jcode;
 #
 # jacode.pl: Perl library for Japanese character code conversion
 #
-# Copyright (c) 2010 INABA Hitoshi <ina@cpan.org>
+# Copyright (c) 2010, 2011 INABA Hitoshi <ina@cpan.org>
 #
 # The latest version is available here:
 #
 #   http://search.cpan.org/dist/jacode/
+#
+# *** CAUTION ***
+# Redistributing this software by the name of jcode.pl infringes on
+# the copyright of jcode.pl.
 #
 # Original version `jcode.pl' is ...
 #
@@ -35,7 +39,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.9 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.10 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 $VERSION = sprintf('%d.%02d%02d%02d', $rcsid =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/);
 $VERSION = $VERSION;
 
@@ -67,8 +71,9 @@ $VERSION = $VERSION;
 #       $ocode can be any of "jis", "sjis", "euc" or "utf8", or
 #       use "noconv" when you don't want the code conversion.
 #       Input code is recognized automatically from the line
-#       itself when $icode is not supplied.  $icode also can be
-#       specified, but xxx2yyy routine is more efficient when
+#       itself when $icode is not supplied. It is better to
+#       specify $icode, since &jcode'getcode's guess is not
+#       always right. xxx2yyy routine is more efficient when
 #       both codes are known.
 #
 #       It returns the code of input string in scalar context,
@@ -231,12 +236,12 @@ $VERSION = $VERSION;
 #
 # SAMPLES
 #
-# Convert any Kanji code to JIS and print each line with code name.
+# Convert SJIS to JIS and print each line with code name.
 #
 #   #require 'jcode.pl';
 #   require 'jacode.pl';
 #   while (defined($s = <>)) {
-#       $code = &jcode'convert(*s, 'jis');
+#       $code = &jcode'convert(*s, 'jis', 'sjis');
 #       print $code, "\t", $s;
 #   }
 #
@@ -245,7 +250,7 @@ $VERSION = $VERSION;
 #   #require 'jcode.pl';
 #   require 'jacode.pl';
 #   while (defined($s = <>)) {
-#       print, next unless $s =~ /[\033\200-\377]/;
+#       print, next unless $s =~ /[\x1b\x80-\xff]/;
 #       (*f, $icode) = &jcode'convert(*s, 'jis');
 #       print;
 #       defined(&f) || next;
@@ -319,7 +324,7 @@ $VERSION = $VERSION;
 sub init {
     $version = $rcsid =~ /,v ([\d.]+)/ ? $1 : 'unknown';
 
-    $re_bin = '[\000-\006\177\377]';
+    $re_bin = '[\x00-\x06\x7f\xff]';
 
     $re_jis0208_1978 = '\e\$\@';
     $re_jis0208_1983 = '\e\$B';
@@ -335,16 +340,16 @@ sub init {
     $esc_asc  = "\e(B";
     $esc_kana = "\e(I";
 
-    $re_ascii    = '[\007-\176]';
-    $re_odd_kana = '[\241-\337]([\241-\337][\241-\337])*';
+    $re_ascii    = '[\x07-\x7e]';
+    $re_odd_kana = '[\xa1-\xdf]([\xa1-\xdf][\xa1-\xdf])*';
 
-    $re_sjis_c    = '[\201-\237\340-\374][\100-\176\200-\374]';
-    $re_sjis_kana = '[\241-\337]';
-    $re_sjis_ank  = '[\007-\176\241-\337]';
+    $re_sjis_c    = '[\x81-\x9f\xe0-\xfc][\x40-\x7e\x80-\xfc]';
+    $re_sjis_kana = '[\xa1-\xdf]';
+    $re_sjis_ank  = '[\x07-\x7e\xa1-\xdf]';
 
-    $re_euc_c    = '[\241-\376][\241-\376]';
-    $re_euc_kana = '\216[\241-\337]';
-    $re_euc_0212 = '\217[\241-\376][\241-\376]';
+    $re_euc_c    = '[\xa1-\xfe][\xa1-\xfe]';
+    $re_euc_kana = '\x8e[\xa1-\xdf]';
+    $re_euc_0212 = '\x8f[\xa1-\xfe][\xa1-\xfe]';
 
     # RFC 3629
     $re_utf8_rfc3629_c =
@@ -392,7 +397,7 @@ sub init {
 
     # JIS X0201 -> JIS X0208 KANA conversion table.  Looks weird?
     # Not that much.  This is simply JIS text without escape sequences.
-    ( $h2z_high = $h2z = <<'__TABLE_END__') =~ tr/\041-\176/\241-\376/;
+    ( $h2z_high = $h2z = <<'__TABLE_END__') =~ tr/\x21-\x7e/\xa1-\xfe/;
 !   !#  $   !"  %   !&  "   !V  #   !W
 ^   !+  _   !,  0   !<
 '   %!  (   %#  )   %%  *   %'  +   %)
@@ -438,6 +443,11 @@ __TABLE_END__
         die "JIS X0201 -> JIS X0208 KANA conversion table is broken.";
     }
     %h2z = split( /\s+/, $h2z . $h2z_high );
+
+    if ( scalar(keys %h2z) != 178 ) {
+        die "scalar(keys %h2z) is ", scalar(keys %h2z), ".";
+    }
+
     %z2h = reverse %h2z;
     if ( scalar( keys %z2h ) != scalar( keys %h2z ) ) {
         die "scalar(keys %z2h) != scalar(keys %h2z).";
@@ -503,7 +513,7 @@ sub getcode {
     local (*s) = @_;
     local ( $matched, $code );
 
-    if ( $s !~ /[\e\200-\377]/ ) {    # not Japanese
+    if ( $s !~ /[\e\x80-\xff]/ ) {    # not Japanese
         $matched = 0;
         $code    = undef;
     }
@@ -519,7 +529,7 @@ sub getcode {
     # Id: getcode.pl,v 0.01 1998/03/17 gama Exp
     # http://www2d.biglobe.ne.jp/~gama/cgi/jcode/jcode.htm
 
-    elsif (/(^|[\000-\177])$re_odd_kana($|[\000-\177])/go) {    # odd katakana
+    elsif (/(^|[\x00-\x7f])$re_odd_kana($|[\x00-\x7f])/go) {    # odd katakana
         $matched = 1;
         $code    = 'sjis';
     }
@@ -536,7 +546,11 @@ sub getcode {
         while ( $s =~ /(($re_euc_c|$re_euc_kana|$re_ascii|$re_euc_0212)+)/go ) {
             $euc += length($1);
         }
-        while ( $s =~ /(($re_utf8_c)+)/go ) {
+
+        # 2011/12/06 Improvement proposal from Hanada Masaaki
+        # before: while ( $s =~ /(($re_utf8_c)+)/go ) {
+
+        while ( $s =~ /(($re_utf8_c|$re_ascii)+)/go ) {
             $utf8 += length($1);
         }
 
@@ -566,16 +580,16 @@ sub getcode {
                 # jcodeg.diff by Gappai
                 # http://www.vector.co.jp/soft/win95/prog/se347514.html
 
-                if ( $s =~ /[\200-\237]/ ) {
+                if ( $s =~ /[\x80-\x9f]/ ) {
                     $code = 'sjis';
                 }
-                elsif ( $s =~ /\216[^\241-\337]/ ) {
+                elsif ( $s =~ /\x8e[^\xa1-\xdf]/ ) {
                     $code = 'sjis';
                 }
-                elsif ( $s =~ /\217[^\241-\376]/ ) {
+                elsif ( $s =~ /\x8f[^\xa1-\xfe]/ ) {
                     $code = 'sjis';
                 }
-                elsif ( $s =~ /\217[\241-\376][^\241-\376]/ ) {
+                elsif ( $s =~ /\x8f[\xa1-\xfe][^\xa1-\xfe]/ ) {
                     $code = 'sjis';
                 }
 
@@ -583,11 +597,11 @@ sub getcode {
                 # http://www.din.or.jp/~ohzaki/perl.htm#JP_Code
 
                 elsif ( $s =~
-/^([\201-\237\340-\374][\100-\176\200-\374]|[\241-\337]|[\x00-\x7F])*$/
+/^([\x81-\x9f\xe0-\xfc][\x40-\x7e\x80-\xfc]|[\xa1-\xdf]|[\x00-\x7F])*$/
                   )
                 {
                     if ( $s !~
-/^([\241-\376][\241-\376]|\216[\241-\337]|\217[\241-\376][\241-\376]|[\x00-\x7F])*$/
+/^([\xa1-\xfe][\xa1-\xfe]|\x8e[\xa1-\xdf]|\x8f[\xa1-\xfe][\xa1-\xfe]|[\x00-\x7F])*$/
                       )
                     {
                         $code = 'sjis';
@@ -713,12 +727,12 @@ sub _sjis2jis {
 sub __sjis2jis {
     local ($s) = shift;
     if ( $s =~ /^$re_sjis_kana/o ) {
-        $n += $s =~ tr/\241-\337/\041-\137/;
+        $n += $s =~ tr/\xa1-\xdf/\x21-\x5f/;
         $esc_kana . $s;
     }
     else {
         $n += $s =~ s/($re_sjis_c)/$s2e{$1}||&s2e($1)/geo;
-        $s =~ tr/\241-\376/\041-\176/;
+        $s =~ tr/\xa1-\xfe/\x21-\x7e/;
         $esc_0208 . $s;
     }
 }
@@ -742,11 +756,11 @@ sub _euc2jis {
 sub __euc2jis {
     local ($s) = shift;
     local ($esc);
-    if ( $s =~ tr/\216//d ) {
+    if ( $s =~ tr/\x8e//d ) {
         $esc = $esc_kana;
         $n += length($s);
     }
-    elsif ( $s =~ tr/\217//d ) {
+    elsif ( $s =~ tr/\x8f//d ) {
         $esc = $esc_0212;
         $n += length($s) / 2;
     }
@@ -754,7 +768,7 @@ sub __euc2jis {
         $esc = $esc_0208;
         $n += length($s) / 2;
     }
-    $s =~ tr/\241-\376/\041-\176/;
+    $s =~ tr/\xa1-\xfe/\x21-\x7e/;
     $esc . $s;
 }
 
@@ -771,12 +785,12 @@ sub jis2euc {
 sub _jis2euc {
     local ( $esc, $s ) = @_;
     if ( $esc !~ /^$re_asc/o ) {
-        $s =~ tr/\041-\176/\241-\376/;
+        $s =~ tr/\x21-\x7e/\xa1-\xfe/;
         if ( $esc =~ /^$re_kana/o ) {
-            $n += $s =~ s/([\241-\337])/\216$1/g;
+            $n += $s =~ s/([\xa1-\xdf])/\x8e$1/g;
         }
         elsif ( $esc =~ /^$re_jis0212/o ) {
-            $n += $s =~ s/([\241-\376][\241-\376])/\217$1/g;
+            $n += $s =~ s/([\xa1-\xfe][\xa1-\xfe])/\x8f$1/g;
         }
     }
     $s;
@@ -798,7 +812,7 @@ sub _jis2sjis {
         $n += $s =~ s/[\x00-\xff][\x00-\xff]/$undef_sjis/g;
     }
     elsif ( $esc !~ /^$re_asc/o ) {
-        $s =~ tr/\041-\176/\241-\376/;
+        $s =~ tr/\x21-\x7e/\xa1-\xfe/;
         if ( $esc =~ /^$re_jp/o ) {
             $n += $s =~ s/($re_euc_c)/$e2s{$1}||&e2s($1)/geo;
         }
@@ -893,12 +907,12 @@ sub _utf82jis {
     if ( $u =~ /^$re_utf8_kana/o ) {
         &init_u2k unless %u2k;
         $n += $u =~ s/($re_utf8_kana)/$u2k{$1}/geo;
-        $u =~ tr/\241-\376/\041-\176/;
+        $u =~ tr/\xa1-\xfe/\x21-\x7e/;
         $esc_kana . $u;
     }
     else {
         $n += $u =~ s/($re_utf8_not_kana)/$u2e{$1}||&u2e($1)/geo;
-        $u =~ tr/\241-\376/\041-\176/;
+        $u =~ tr/\xa1-\xfe/\x21-\x7e/;
         $esc_0208 . $u;
     }
 }
@@ -917,7 +931,7 @@ sub _utf82euc {
     local ($u) = @_;
     if ( $u =~ /^$re_utf8_kana/o ) {
         &init_u2k unless %u2k;
-        $n += $u =~ s/($re_utf8_kana)/"\216".$u2k{$1}/geo;
+        $n += $u =~ s/($re_utf8_kana)/"\x8e".$u2k{$1}/geo;
     }
     else {
         $n += $u =~ s/($re_utf8_not_kana)/$u2e{$1}||&u2e($1)/geo;
@@ -999,11 +1013,11 @@ sub _jis2utf8 {
     }
     elsif ( $esc =~ /^$re_kana/o ) {
         &init_k2u unless %k2u;
-        $n += $s =~ tr/\041-\176/\241-\376/;
+        $n += $s =~ tr/\x21-\x7e/\xa1-\xfe/;
         $s =~ s/([\x00-\xff])/$k2u{$1}/ge;
     }
     elsif ( $esc !~ /^$re_asc/o ) {
-        $n += $s =~ tr/\041-\176/\241-\376/;
+        $n += $s =~ tr/\x21-\x7e/\xa1-\xfe/;
         if ( $esc =~ /^$re_jp/o ) {
             $s =~ s/($re_euc_c)/$e2u{$1}||&e2u($1)/geo;
         }
@@ -1028,7 +1042,7 @@ sub _euc2utf8 {
     }
     elsif ( $s =~ /^$re_euc_kana/o ) {
         &init_k2u unless %k2u;
-        $n += $s =~ s/\216([\x00-\xff])/$k2u{$1}/ge;
+        $n += $s =~ s/\x8e([\x00-\xff])/$k2u{$1}/ge;
     }
     else {
         $n += $s =~ s/($re_euc_c)/$e2u{$1}||&e2u($1)/geo;
@@ -1188,7 +1202,7 @@ sub h2z_jis {
 
 sub _h2z_jis {
     local ($s) = @_;
-    $n += $s =~ s/(([\041-\137])([\136\137])?)/
+    $n += $s =~ s/(([\x21-\x5f])([\x5e\x5f])?)/
     $h2z{$1} || $h2z{$2} . $h2z{$3}
     /ge;
     $s;
@@ -1200,7 +1214,7 @@ sub _h2z_jis {
 
 sub h2z_euc {
     local ( *s, $n ) = @_;
-    $s =~ s/\216([\241-\337])(\216([\336\337]))?/
+    $s =~ s/\x8e([\xa1-\xdf])(\x8e([\xde\xdf]))?/
     ($n++, defined($3) ? ($h2z{"$1$3"} || $h2z{$1} . $h2z{$3}) : $h2z{$1})
     /ge;
     $n;
@@ -1208,7 +1222,7 @@ sub h2z_euc {
 
 sub h2z_sjis {
     local ( *s, $n ) = @_;
-    $s =~ s/(($re_sjis_c)+)|(([\241-\337])([\336\337])?)/
+    $s =~ s/(($re_sjis_c)+)|(([\xa1-\xdf])([\xde\xdf])?)/
     $1 || ($n++, $h2z{$3} ? $e2s{$h2z{$3}} || &e2s($h2z{$3})
                   : &e2s($h2z{$4}) . ($5 && &e2s($h2z{$5})))
     /geo;
@@ -1282,14 +1296,14 @@ sub z2h_utf8 {
 sub init_z2h_euc {
     local ( $k, $s );
     while ( ( $k, $s ) = each %z2h ) {
-        $s =~ s/([\241-\337])/\216$1/g && ( $z2h_euc{$k} = $s );
+        $s =~ s/([\xa1-\xdf])/\x8e$1/g && ( $z2h_euc{$k} = $s );
     }
 }
 
 sub init_z2h_sjis {
     local ( $s, $v );
     while ( ( $s, $v ) = each %z2h ) {
-        $s =~ /[\200-\377]/ && ( $z2h_sjis{ &e2s($s) } = $v );
+        $s =~ /[\x80-\xff]/ && ( $z2h_sjis{ &e2s($s) } = $v );
     }
 }
 
@@ -1384,6 +1398,10 @@ e38397 efbe8cefbe9f
 e3839a efbe8defbe9f
 e3839d efbe8eefbe9f
 END
+
+if ( scalar(keys %_z2h_utf8) != 89 ) {
+    die "scalar(keys %_z2h_utf8) is ", scalar(keys %_z2h_utf8), ".";
+}
 
 sub init_z2h_utf8 {
     if (%h2z_utf8) {
@@ -5076,6 +5094,10 @@ df efbe9f
 9871 e7a297
 9872 e88595
 END
+
+    if ( scalar(keys %sjis2utf8_1) != 3635 ) {
+        die "scalar(keys %sjis2utf8_1) is ", scalar(keys %sjis2utf8_1), ".";
+    }
 
     # (2 of 2) avoid "Allocation too large" of perl 4.036
 
@@ -9233,6 +9255,10 @@ fc49 efa8ad
 fc4a e9b899
 fc4b e9bb91
 END
+
+    if ( scalar(keys %sjis2utf8_2) != 4152 ) {
+        die "scalar(keys %sjis2utf8_2) is ", scalar(keys %sjis2utf8_2), ".";
+    }
 }
 
 sub init_utf82sjis {
@@ -9643,6 +9669,10 @@ e28496 8782
 e284a1 8784
 e288b5 81e6
 END
+
+    if ( scalar(keys %JP170559) != 396 ) {
+        die "scalar(keys %JP170559) is ", scalar(keys %JP170559), ".";
+    }
 }
 
 %kana2utf8 = split( /\s+/, <<'END' );
@@ -9711,6 +9741,10 @@ de efbe9e
 df efbe9f
 END
 
+if ( scalar(keys %kana2utf8) != 63 ) {
+    die "scalar(keys %kana2utf8) is ", scalar(keys %kana2utf8), ".";
+}
+
 sub init_k2u {
     if (%u2k) {
         %k2u = reverse %u2k;
@@ -9767,7 +9801,7 @@ sub tr {
         &_maketable;
     }
 
-    $s =~ s/([\200-\377][\000-\377]|[\000-\377])/
+    $s =~ s/([\x80-\xff][\x00-\xff]|[\x00-\xff])/
     defined($table{$1}) && ++$n ? $table{$1} : $1
     /ge;
 
@@ -9777,17 +9811,17 @@ sub tr {
 }
 
 sub _maketable {
-    local ($ascii) = '(\\\\[\\-\\\\]|[\0-\133\135-\177])';
+    local ($ascii) = '(\\\\[\\-\\\\]|[\0-\x5b\x5d-\x7f])';
 
     &jis2euc(*to)   if $to   =~ /$re_jp|$re_asc|$re_kana/o;
     &jis2euc(*from) if $from =~ /$re_jp|$re_asc|$re_kana/o;
 
-    grep( s/(([\200-\377])[\200-\377]-\2[\200-\377])/&_expnd2($1)/ge,
+    grep( s/(([\x80-\xff])[\x80-\xff]-\2[\x80-\xff])/&_expnd2($1)/ge,
         $from, $to );
     grep( s/($ascii-$ascii)/&_expnd1($1)/geo, $from, $to );
 
-    @to   = $to   =~ /[\200-\377][\000-\377]|[\000-\377]/g;
-    @from = $from =~ /[\200-\377][\000-\377]|[\000-\377]/g;
+    @to   = $to   =~ /[\x80-\xff][\x00-\xff]|[\x00-\xff]/g;
+    @from = $from =~ /[\x80-\xff][\x00-\xff]|[\x00-\xff]/g;
     push( @to, ( $opt =~ /d/ ? '' : $to[$#to] ) x ( @from - @to ) )
       if @to < @from;
     @table{@from} = @to;
@@ -9910,7 +9944,7 @@ What's this software good for ...
 
 =item * Perl4 script
 
-=item * Acts as a wrapper to Encode::from_to
+=item * Acts as a wrapper to Encode::from_to (Yes, not only Japanese!)
 
 =item * Support HALFWIDTH KATAKANA
 
@@ -9958,8 +9992,9 @@ This software requires perl 4.036 or later.
   $ocode can be any of "jis", "sjis", "euc" or "utf8", or
   use "noconv" when you don't want the code conversion.
   Input code is recognized automatically from the line
-  itself when $icode is not supplied.  $icode also can be
-  specified, but xxx2yyy routine is more efficient when
+  itself when $icode is not supplied. It is better to
+  specify $icode, since &jcode'getcode's guess is not
+  always right. xxx2yyy routine is more efficient when
   both codes are known.
   
   It returns the code of input string in scalar context,
@@ -10159,12 +10194,12 @@ avoid the mysterious error.
 
 =head1 SAMPLES
 
-Convert any Kanji code to JIS and print each line with code name.
+Convert SJIS to JIS and print each line with code name.
 
   #require 'jcode.pl';
   require 'jacode.pl';
   while (defined($s = <>)) {
-      $code = &jcode'convert(*s, 'jis');
+      $code = &jcode'convert(*s, 'jis', 'sjis');
       print $code, "\t", $s;
   }
 
@@ -10173,7 +10208,7 @@ Convert all lines to JIS according to the first recognized line.
   #require 'jcode.pl';
   require 'jacode.pl';
   while (defined($s = <>)) {
-      print, next unless $s =~ /[\033\200-\377]/;
+      print, next unless $s =~ /[\x1b\x80-\xff]/;
       (*f, $icode) = &jcode'convert(*s, 'jis');
       print;
       defined(&f) || next;
@@ -10236,6 +10271,8 @@ Convert SJIS to MIME-Header-ISO_2022_JP and print each line by perl 5.8.1 or lat
 
 You must use -Llatin switch if you use on the JPerl.
 
+Please patches and report problems to author are welcome.
+
 =head1 AUTHOR
 
 This project was originated by Kazumasa Utashiro E<lt>utashiro@iij.ad.jpE<gt>.
@@ -10244,11 +10281,15 @@ This project was originated by Kazumasa Utashiro E<lt>utashiro@iij.ad.jpE<gt>.
 
 This software is free software;
 
-Copyright (c) 2010 INABA Hitoshi E<lt>ina@cpan.org>E<gt>
+Copyright (c) 2010, 2011 INABA Hitoshi E<lt>ina@cpan.org>E<gt>
 
 The latest version is available here:
 
 L<http://search.cpan.org/dist/jacode/>
+
+ *** CAUTION ***
+ Redistributing this software by the name of jcode.pl infringes on
+ the copyright of jcode.pl.
 
 Original version `jcode.pl' is ...
 
@@ -10281,28 +10322,107 @@ L<ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/>
 
 =head1 SEE ALSO
 
- PERL PUROGURAMINGU
- Larry Wall, Randal L.Schwartz, Yoshiyuki Kondo
- December 1997
- ISBN 4-89052-384-7
- http://www.context.co.jp/~cond/books/old-books.html
+ Programming Perl, Second Edition
+ By Larry Wall, Tom Christiansen, Randal L. Schwartz
+ October 1996
+ Pages: 670
+ ISBN 10: 1-56592-149-6 | ISBN 13: 9781565921498
+ http://shop.oreilly.com/product/9781565921498.do
+
+ Programming Perl, Third Edition
+ By Larry Wall, Tom Christiansen, Jon Orwant
+ Third Edition  July 2000
+ Pages: 1104
+ ISBN 10: 0-596-00027-8 | ISBN 13: 9780596000271
+ http://shop.oreilly.com/product/9780596000271.do
+
+ Programming Perl, 4th Edition
+ By: Tom Christiansen, brian d foy, Larry Wall, Jon Orwant
+ Publisher: O'Reilly Media
+ Formats: Print, Ebook, Safari Books Online
+ Print: January 2012
+ Ebook: December 2011
+ Pages: 1054
+ Print ISBN: 978-0-596-00492-7 | ISBN 10: 0-596-00492-3
+ Ebook ISBN: 978-1-4493-9890-3 | ISBN 10: 1-4493-9890-1
+ http://shop.oreilly.com/product/9780596004927.do
+
+ Perl Cookbook, Second Edition
+ By Tom Christiansen, Nathan Torkington
+ Second Edition  August 2003
+ Pages: 964
+ ISBN 10: 0-596-00313-7 | ISBN 13: 9780596003135
+ http://shop.oreilly.com/product/9780596003135.do
+
+ Perl in a Nutshell, Second Edition
+ By Stephen Spainhour, Ellen Siever, Nathan Patwardhan
+ Second Edition  June 2002
+ Pages: 760
+ Series: In a Nutshell
+ ISBN 10: 0-596-00241-6 | ISBN 13: 9780596002411
+ http://shop.oreilly.com/product/9780596002411.do
+
+ Learning Perl on Win32 Systems
+ By Randal L. Schwartz, Erik Olson, Tom Christiansen
+ August 1997
+ Pages: 306
+ ISBN 10: 1-56592-324-3 | ISBN 13: 9781565923249
+ http://shop.oreilly.com/product/9781565923249.do
+
+ Learning Perl, Fifth Edition
+ By Randal L. Schwartz, Tom Phoenix, brian d foy
+ June 2008
+ Pages: 352
+ Print ISBN:978-0-596-52010-6 | ISBN 10: 0-596-52010-7
+ Ebook ISBN:978-0-596-10316-3 | ISBN 10: 0-596-10316-6
+ http://shop.oreilly.com/product/9780596520113.do
+
+ Perl RESOURCE KIT UNIX EDITION
+ Futato, Irving, Jepson, Patwardhan, Siever
+ ISBN 10: 1-56592-370-7
+ http://shop.oreilly.com/product/9781565923706.do
 
  Understanding Japanese Information Processing
  By Ken Lunde
  January 1900
  Pages: 470
  ISBN 10: 1-56592-043-0 | ISBN 13: 9781565920439
- http://oreilly.com/catalog/9781565920439/
+ http://shop.oreilly.com/product/9781565920439.do
 
  CJKV Information Processing
  Chinese, Japanese, Korean & Vietnamese Computing
  By Ken Lunde
  First Edition  January 1999
  Pages: 1128
- ISBN 10: 1-56592-224-7 | ISBN 13:9781565922242
- http://www.oreilly.com/catalog/cjkvinfo/index.html
- ISBN 4-87311-108-0
- http://www.oreilly.co.jp/books/4873111080/
+ ISBN 10: 1-56592-224-7 | ISBN 13: 9781565922242
+ http://shop.oreilly.com/product/9781565922242.do
+
+ Mastering Regular Expressions, Second Edition
+ By Jeffrey E. F. Friedl
+ Second Edition  July 2002
+ Pages: 484
+ ISBN 10: 0-596-00289-0 | ISBN 13: 9780596002893
+ http://shop.oreilly.com/product/9780596002893.do
+
+ Mastering Regular Expressions, Third Edition
+ By Jeffrey E. F. Friedl
+ Third Edition  August 2006
+ Pages: 542
+ ISBN 10: 0-596-52812-4 | ISBN 13:9780596528126
+ http://shop.oreilly.com/product/9780596528126.do
+
+ Regular Expressions Cookbook
+ By Jan Goyvaerts, Steven Levithan
+ May 2009
+ Pages: 512
+ ISBN 10:0-596-52068-9 | ISBN 13: 978-0-596-52068-7
+ http://shop.oreilly.com/product/9780596520694.do
+
+ PERL PUROGURAMINGU
+ Larry Wall, Randal L.Schwartz, Yoshiyuki Kondo
+ December 1997
+ ISBN 4-89052-384-7
+ http://www.context.co.jp/~cond/books/old-books.html
 
  JIS KANJI JITEN
  Kouji Shibano
@@ -10310,11 +10430,25 @@ L<ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/>
  ISBN 4-542-20129-5
  http://www.webstore.jsa.or.jp/lib/lib.asp?fn=/manual/mnl01_12.htm
 
- Unicode NI YORU JIS X 0213 JISSOU NYUMON
- Kenzaburo Tamaru
- Pages: 200
- ISBN 978-4-89100-608-2
- http://ec.nikkeibp.co.jp/item/books/A04500.html
+ UNIX MAGAZINE
+ 1993 Aug
+ Pages: 172
+ T1008901080816 ZASSHI 08901-8
+ http://ascii.asciimw.jp/books/books/detail/978-4-7561-5008-0.shtml
+
+ MacPerl Power and Ease
+ By Vicki Brown, Chris Nandor
+ April 1998
+ Pages: 350
+ ISBN 10: 1881957322 | ISBN 13: 978-1881957324
+ http://www.amazon.com/Macperl-Power-Ease-Vicki-Brown/dp/1881957322
+
+ Other Tools
+ http://search.cpan.org/dist/Char/
+ http://search.cpan.org/dist/Char-Sjis/
+
+ BackPAN
+ http://backpan.perl.org/authors/id/I/IN/INA/
 
 =head1 ACKNOWLEDGEMENTS
 

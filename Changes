@@ -1,5 +1,11 @@
 Revision history for this software.
 
+2.13.4.10 2011/12/10 00:00:00
+	- rewrite octal escapes to hexadecimal.
+	- check scalar(keys %associative_array).
+	- improve &jcode'getcode by Improvement proposal from Hanada Masaaki in 2011/12/06.
+	created by INABA Hitoshi
+
 2.13.4.9 2010/07/13 00:00:00
 	- optimize utf82sjis.
 	created by INABA Hitoshi
@@ -39,7 +45,7 @@ Revision history for this software.
 	created by INABA Hitoshi
 
 2.13.4.1 alpha 2010/01/21 00:00:00
-	- Support jperl4
+	- support jperl4
 	- POD document
 	- rewrite test.pl in Perl4
 	created by INABA Hitoshi

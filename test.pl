@@ -2,7 +2,7 @@
 #
 # test.pl for testing jacode.pl
 #
-# Copyright (c) 2010 INABA Hitoshi <ina@cpan.org>
+# Copyright (c) 2010, 2011 INABA Hitoshi <ina@cpan.org>
 #
 ######################################################################
 
