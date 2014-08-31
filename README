@@ -37,7 +37,7 @@ ABSTRACT
     This software has upper compatibility to jcode.pl.
 
     * jcode.pl upper compatible
-    * Perl4 script
+    * Perl4(also Perl5) script
     * Acts as a wrapper to Encode::from_to (Yes, not only Japanese!)
     * Support HALFWIDTH KATAKANA
     * Support UTF-8 by cp932 to Unicode table
@@ -64,7 +64,7 @@ AUTHOR
 
     Copyright (c) 1992,1993,1994 Kazumasa Utashiro
     Copyright (c) 1995-2000 Kazumasa Utashiro
-    Copyright (c) 2010, 2011 INABA Hitoshi
+    Copyright (c) 2010, 2011, 2014 INABA Hitoshi
 
 LICENSE AND COPYRIGHT
 

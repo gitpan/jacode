@@ -1,16 +1,13 @@
 ######################################################################
 #
-# test.pl for testing jacode.pl
+# 001_test.t for testing jacode.pl
 #
-# Copyright (c) 2010, 2011 INABA Hitoshi <ina@cpan.org>
+# Copyright (c) 2010, 2011, 2014 INABA Hitoshi <ina@cpan.org>
 #
 ######################################################################
 
-if ($^X =~ /jperl/i) {
-    $opt = '-Llatin';
-}
-
-print STDERR "Running on $^X $]\n";
+print "1..32\n";
+$opt = ($^X =~ /jperl/i) ? '-Llatin' : '';
 
 $tno = 1;
 
@@ -18,10 +15,10 @@ chdir('t');
 
 # han2zen
 for $script (split(' ',<<'END')) {
-    h2z_jis.t
-    h2z_sjis.t
-    h2z_euc.t
-    h2z_utf8.t
+    h2z_jis.pl
+    h2z_sjis.pl
+    h2z_euc.pl
+    h2z_utf8.pl
 END
     system(qq{$^X $opt -I.. $script han.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
@@ -35,10 +32,10 @@ END
 
 # zen2han
 for $script (split(' ',<<'END')) {
-    z2h_jis.t
-    z2h_sjis.t
-    z2h_euc.t
-    z2h_utf8.t
+    z2h_jis.pl
+    z2h_sjis.pl
+    z2h_euc.pl
+    z2h_utf8.pl
 END
     system(qq{$^X $opt -I.. $script zen.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
@@ -52,9 +49,9 @@ END
 
 # JIS to Any Kanji
 for $script (split(' ',<<'END')) {
-    JIStoEUC.t
-    JIStoSJIS.t
-    JIStoUTF8.t
+    JIStoEUC.pl
+    JIStoSJIS.pl
+    JIStoUTF8.pl
 END
     system(qq{$^X $opt -I.. $script jis.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
@@ -68,9 +65,9 @@ END
 
 # SJIS to Any Kanji
 for $script (split(' ',<<'END')) {
-    SJIStoJIS.t
-    SJIStoEUC.t
-    SJIStoUTF8.t
+    SJIStoJIS.pl
+    SJIStoEUC.pl
+    SJIStoUTF8.pl
 END
     system(qq{$^X $opt -I.. $script sjis.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
@@ -84,9 +81,9 @@ END
 
 # EUC to Any Kanji
 for $script (split(' ',<<'END')) {
-    EUCtoJIS.t
-    EUCtoSJIS.t
-    EUCtoUTF8.t
+    EUCtoJIS.pl
+    EUCtoSJIS.pl
+    EUCtoUTF8.pl
 END
     system(qq{$^X $opt -I.. $script euc.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
@@ -100,9 +97,9 @@ END
 
 # UTF8 to Any Kanji
 for $script (split(' ',<<'END')) {
-    UTF8toJIS.t
-    UTF8toSJIS.t
-    UTF8toEUC.t
+    UTF8toJIS.pl
+    UTF8toSJIS.pl
+    UTF8toEUC.pl
 END
     system(qq{$^X $opt -I.. $script utf8.txt > $script.txt});
     if (&filecompare("$script.txt","$script.want")) {
@@ -116,9 +113,9 @@ END
 
 # JIS to Any Kana
 for $script (split(' ',<<'END')) {
-    JIStoEUC.t
-    JIStoSJIS.t
-    JIStoUTF8.t
+    JIStoEUC.pl
+    JIStoSJIS.pl
+    JIStoUTF8.pl
 END
     system(qq{$^X $opt -I.. $script jis.kana.txt > $script.kana.txt});
     if (&filecompare("$script.kana.txt","$script.kana.want")) {
@@ -132,9 +129,9 @@ END
 
 # SJIS to Any Kana
 for $script (split(' ',<<'END')) {
-    SJIStoJIS.t
-    SJIStoEUC.t
-    SJIStoUTF8.t
+    SJIStoJIS.pl
+    SJIStoEUC.pl
+    SJIStoUTF8.pl
 END
     system(qq{$^X $opt -I.. $script sjis.kana.txt > $script.kana.txt});
     if (&filecompare("$script.kana.txt","$script.kana.want")) {
@@ -148,9 +145,9 @@ END
 
 # EUC to Any Kana
 for $script (split(' ',<<'END')) {
-    EUCtoJIS.t
-    EUCtoSJIS.t
-    EUCtoUTF8.t
+    EUCtoJIS.pl
+    EUCtoSJIS.pl
+    EUCtoUTF8.pl
 END
     system(qq{$^X $opt -I.. $script euc.kana.txt > $script.kana.txt});
     if (&filecompare("$script.kana.txt","$script.kana.want")) {
@@ -164,9 +161,9 @@ END
 
 # UTF8 to Any Kana
 for $script (split(' ',<<'END')) {
-    UTF8toJIS.t
-    UTF8toSJIS.t
-    UTF8toEUC.t
+    UTF8toJIS.pl
+    UTF8toSJIS.pl
+    UTF8toEUC.pl
 END
     system(qq{$^X $opt -I.. $script utf8.kana.txt > $script.kana.txt});
     if (&filecompare("$script.kana.txt","$script.kana.want")) {

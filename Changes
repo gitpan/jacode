@@ -1,55 +1,58 @@
 Revision history for this software.
 
+2.13.4.11 2014/08/31 00:00:00
+  - support make test
+  - created by INABA Hitoshi
+
 2.13.4.10 2011/12/10 00:00:00
-	- rewrite octal escapes to hexadecimal.
-	- check scalar(keys %associative_array).
-	- improve &jcode'getcode by Improvement proposal from Hanada Masaaki in 2011/12/06.
-	created by INABA Hitoshi
+  - rewrite octal escapes to hexadecimal
+  - check scalar(keys %associative_array)
+  - improve &jcode'getcode by Improvement proposal from Hanada Masaaki in 2011/12/06
+  - created by INABA Hitoshi
 
 2.13.4.9 2010/07/13 00:00:00
-	- optimize utf82sjis.
-	created by INABA Hitoshi
+  - optimize utf82sjis
+  - created by INABA Hitoshi
 
 2.13.4.8 2010/06/30 00:00:00
-	- change some documents.
-	- fix _utf82sjis and add Katakana test.
-	created by INABA Hitoshi
+  - change some documents
+  - fix _utf82sjis and add Katakana test
+  - created by INABA Hitoshi
 
 2.13.4.7 2010/04/18 00:00:00
-	- avoid perl5.12 warning "defined(%hash) is deprecated at ...".
-	created by INABA Hitoshi
+  - avoid perl5.12 warning "defined(%hash) is deprecated at ..."
+  - created by INABA Hitoshi
 
 2.13.4.6 rc1 2010/04/06 00:00:00
-	- fix comment.
-	- release candidate 1.
-	created by INABA Hitoshi
+  - fix comment
+  - release candidate 1
+  - created by INABA Hitoshi
 
 2.13.4.5 beta 2010/03/06 00:00:00
-	- minor document corrections.
-	- &jcode'flush() support.
-	- turn off utf8 flag by Encode::encode_utf8.
-	created by INABA Hitoshi
+  - minor document corrections
+  - &jcode'flush() support
+  - turn off utf8 flag by Encode::encode_utf8
+  - created by INABA Hitoshi
 
 2.13.4.4 beta 2010/02/10 00:00:00
-	- fix comment.
-	- beta version.
-	created by INABA Hitoshi
+  - fix comment
+  - beta version
+  - created by INABA Hitoshi
 
 2.13.4.3 alpha 2010/02/04 00:00:00
-	- acts as a wrapper to Encode::from_to for perl 5.8.1 and later
-	  when $ocode or $icode is neither "jis", "sjis", "euc" nor "utf8".
-	created by INABA Hitoshi
+  - acts as a wrapper to Encode::from_to for perl 5.8.1 and later when $ocode or $icode is neither "jis", "sjis", "euc" nor "utf8"
+  - created by INABA Hitoshi
 
 2.13.4.2 alpha 2010/01/25 00:00:00
-	- add comment
-	created by INABA Hitoshi
+  - add comment
+  - created by INABA Hitoshi
 
 2.13.4.1 alpha 2010/01/21 00:00:00
-	- support jperl4
-	- POD document
-	- rewrite test.pl in Perl4
-	created by INABA Hitoshi
+  - support jperl4
+  - POD document
+  - rewrite test.pl in Perl4
+  - created by INABA Hitoshi
 
 2.13.4.0 alpha 2010/01/19 00:00:00
-	- branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp
-	created by INABA Hitoshi
+  - branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp
+  - created by INABA Hitoshi

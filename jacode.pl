@@ -3,7 +3,7 @@ package jcode;
 #
 # jacode.pl: Perl library for Japanese character code conversion
 #
-# Copyright (c) 2010, 2011 INABA Hitoshi <ina@cpan.org>
+# Copyright (c) 2010, 2011, 2014 INABA Hitoshi <ina@cpan.org>
 #
 # The latest version is available here:
 #
@@ -39,7 +39,7 @@ package jcode;
 #   ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
 #
 $rcsid =
-q$Id: jacode.pl,v 2.13.4.10 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
+q$Id: jacode.pl,v 2.13.4.11 branched from jcode.pl,v 2.13 2000/09/29 16:10:05 utashiro Exp $;
 $VERSION = sprintf('%d.%02d%02d%02d', $rcsid =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/);
 $VERSION = $VERSION;
 
@@ -9942,7 +9942,7 @@ What's this software good for ...
 
 =item * jcode.pl upper compatible
 
-=item * Perl4 script
+=item * Perl4 script (Even Perl5 script)
 
 =item * Acts as a wrapper to Encode::from_to (Yes, not only Japanese!)
 
@@ -10271,7 +10271,12 @@ Convert SJIS to MIME-Header-ISO_2022_JP and print each line by perl 5.8.1 or lat
 
 You must use -Llatin switch if you use on the JPerl.
 
-Please patches and report problems to author are welcome.
+I have tested and verified this software using the best of my ability.
+However, a software containing much code is bound to contain some bugs.
+Thus, if you happen to find a bug that's in jacode.pl and not your own
+program, you can try to reduce it to a minimal test case and then report
+it to the following author's address. If you have an idea that could make
+this a more useful tool, please let everyone share it.
 
 =head1 AUTHOR
 
@@ -10281,7 +10286,7 @@ This project was originated by Kazumasa Utashiro E<lt>utashiro@iij.ad.jpE<gt>.
 
 This software is free software;
 
-Copyright (c) 2010, 2011 INABA Hitoshi E<lt>ina@cpan.org>E<gt>
+Copyright (c) 2010, 2011, 2014 INABA Hitoshi E<lt>ina@cpan.org>E<gt>
 
 The latest version is available here:
 
@@ -10322,6 +10327,12 @@ L<ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/>
 
 =head1 SEE ALSO
 
+ UNIX MAGAZINE
+ 1992 Apr
+ Pages: 148
+ T1008901040810 ZASSHI 08901-4
+ http://ascii.asciimw.jp/books/books/detail/978-4-7561-5008-0.shtml
+
  Programming Perl, Second Edition
  By Larry Wall, Tom Christiansen, Randal L. Schwartz
  October 1996
@@ -10341,8 +10352,8 @@ L<ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/>
  Publisher: O'Reilly Media
  Formats: Print, Ebook, Safari Books Online
  Print: January 2012
- Ebook: December 2011
- Pages: 1054
+ Ebook: March 2012
+ Pages: 1130
  Print ISBN: 978-0-596-00492-7 | ISBN 10: 0-596-00492-3
  Ebook ISBN: 978-1-4493-9890-3 | ISBN 10: 1-4493-9890-1
  http://shop.oreilly.com/product/9780596004927.do
@@ -10462,6 +10473,7 @@ I am thankful to all persons.
  Kazumasa Utashiro, jcode.pl
  ftp://ftp.iij.ad.jp/pub/IIJ/dist/utashiro/perl/
  http://mail.pm.org/pipermail/tokyo-pm/2002-March/001319.html
+ https://twitter.com/uta46/status/11578906320
 
  mikeneko creator club, Private manual of jcode.pl
  http://mikeneko.creator.club.ne.jp/~lab/kcode/jcode.html
